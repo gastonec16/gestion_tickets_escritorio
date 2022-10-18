@@ -2,25 +2,19 @@ import mariadb
 from tkinter import messagebox as mb
 
 class Area:
-    def __init__ (self, nombre, email, telefono):
-        self.nombre = nombre
-        self.email = email
-        self.telefono = telefono
+    def __init__ (self,):
+        self.conexion = mariadb.connect(host="localhost", user="root",
+                                    passwd="", database="Tickets")
 
-        self.conexion = mariadb.connect(host="localhost",user="root",
-                                    passwd="",database="Tickets")
-
-        
-    def insertar(self):
+    def insertar(self, nombre, email, telefono):
         con = self.conexion.cursor()
         #LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql=f'''INSERT INTO area (nombre, email, telefono)
-        VALUES('{self.nombre}','{self.email}','{self.telefono}')'''
+        VALUES('{nombre}','{email}','{telefono}')'''
         con.execute(sql)
         self.conexion.commit()
         con.close()
         mb.showinfo(title="area agregada",message="Se ha agregado una nueva area con éxito")
-        
 
     def mostrar(self):
         con = self.conexion.cursor()
@@ -28,8 +22,6 @@ class Area:
         con.execute(sql)
         registro = con.fetchall()
         return registro
-
-   
 
     def eliminar_area(self,id_area):
         con = self.conexion.cursor()
