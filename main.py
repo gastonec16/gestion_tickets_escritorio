@@ -1,7 +1,8 @@
 from os import path
-from tkinter import PhotoImage, Tk, Text
+from tkinter import PhotoImage, StringVar, Tk, Text
 from tkinter.ttk import  Button, Combobox, Entry, Frame, Label, Notebook, Scrollbar, Spinbox, Style, Treeview
 from tkinter.font import Font
+from clases import *
 
 #region funciones
 
@@ -17,11 +18,28 @@ def posicionar_formulario(lista_label, lista_entry, button=None, column=0, row=1
     if button != None:
         button.grid(column=column+1, row=row_entry, padx=24, pady=(12,8), ipadx=16, ipady=6, sticky='e')
 
+def text_con_scrollbar(frame):
+
+    frame_text = Frame(frame)
+    frame_text.columnconfigure(0, weight=1)
+
+    text = Text(frame_text, height=7, width=0, font=fuente_label)
+    scrollbar = Scrollbar(frame_text, command=text.yview)
+    text.config(yscrollcommand=scrollbar.set)
+    text.grid(column=0, row=0, sticky='nsew')
+    scrollbar.grid(row=0, column=1, sticky='ns')
+
+    return frame_text
+
 def registrarse():
     print('registrarse')
 
 def agregar_area():
-    print('agregar área')
+    nombre = nombre_area.get()
+    email = email_area.get()
+    telefono = telefono_area.get()
+    area = Area(nombre, email, telefono)
+    area.insertar()
 
 def crear_ticket():
     print('crear ticket')
@@ -35,14 +53,16 @@ def crear_pedido():
 def agregar_detalle_pedido():
     print('agregar detalle pedido')
 
-lista_area = ['Palacio', 'Administracion',
+lista_areas = ['Palacio', 'Administracion',
               'Computos', 'Modernizacion', 'Cultura', 'Turismo']
 
-lista_prioridad = ['Baja', 'Media', 'Alta']
+lista_prioridades = ['Baja', 'Media', 'Alta']
 
-lista_tecnico = ['Oscar', 'Camilo', 'Agustin']
+lista_tecnicos = ['Oscar', 'Camilo', 'Agustin']
 
 lista_articulos = ['Mouse', 'Teclado', 'Monitor', 'Disco Duro', 'SSD']
+
+lista_estados = []
 
 #endregion
 
@@ -103,6 +123,17 @@ label_pie.grid(column=0, row=1, columnspan=2, sticky='w')
 
 #endregion
 
+#region variables
+
+nombre_area = StringVar()
+email_area = StringVar()
+telefono_area = StringVar()
+nombre_mod_area = StringVar()
+email_mod_area = StringVar()
+telefono_mod_area = StringVar()
+
+#endregion
+
 #region widgets
 
 def widgets_registrarse():
@@ -144,33 +175,33 @@ def widgets_registrarse():
 
     notebook_contenido.add(frame_registrarse, text='Registrarse')
 
-def widgets_area():
+def widgets_areas():
 
-    frame_area = Frame()
-    frame_area.grid(column=0, row=0, sticky='nsew')
-    frame_area.columnconfigure(0, weight=5)
-    frame_area.columnconfigure(2, weight=1)
-    frame_area.rowconfigure((1,2,3,4,7,8,9), weight=1)
+    frame_areas = Frame()
+    frame_areas.grid(column=0, row=0, sticky='nsew')
+    frame_areas.columnconfigure(0, weight=5)
+    frame_areas.columnconfigure(2, weight=1)
+    frame_areas.rowconfigure((1,2,3,4,7,8,9), weight=1)
 
-    label_titulo = Label(frame_area, style='titulo.TLabel', text='Áreas')
+    label_titulo = Label(frame_areas, style='titulo.TLabel', text='Áreas')
     label_titulo.grid(column=0, row=0, columnspan=3)
 
-    frame_treeview_areas = Frame(frame_area)
+    frame_treeview_areas = Frame(frame_areas)
     frame_treeview_areas.grid(column=0, row=1, rowspan=10, padx=24, pady=(12,8), sticky='nsew')
     frame_treeview_areas.columnconfigure(0, weight=1)
     frame_treeview_areas.rowconfigure(0, weight=1)
 
-    columnas = ('nombre', 'telefono', 'email')
+    columnas = ('nombre', 'email', 'telefono')
 
     treeview_areas = Treeview(frame_treeview_areas, columns=columnas, height=20, show='headings')
 
     treeview_areas.heading('nombre', text='Nombre')
-    treeview_areas.heading('telefono', text='Teléfono')
     treeview_areas.heading('email', text='Email')
+    treeview_areas.heading('telefono', text='Teléfono')
 
-    treeview_areas.column("nombre", minwidth=40, width=0)
-    treeview_areas.column("telefono", minwidth=40, width=0)
-    treeview_areas.column("email", minwidth=40, width=0)
+    treeview_areas.column('nombre', minwidth=40, width=0)
+    treeview_areas.column('email', minwidth=40, width=0)
+    treeview_areas.column('telefono', minwidth=40, width=0)
 
     treeview_areas.grid(column=0, row=0, sticky='nsew')
 
@@ -181,39 +212,39 @@ def widgets_area():
     # 2ª columna
 
     lista_label_area = [
-        Label(frame_area, text='Nombre de Área *'),
-        Label(frame_area, text='Teléfono  '),
-        Label(frame_area, text='Email  ')
+        Label(frame_areas, text='Nombre de Área *'),
+        Label(frame_areas, text='Email  '),
+        Label(frame_areas, text='Teléfono  ')
     ]
     lista_entry_area = [
-        Entry(frame_area),
-        Entry(frame_area),
-        Entry(frame_area)
+        Entry(frame_areas, textvariable=nombre_mod_area),
+        Entry(frame_areas, textvariable=email_mod_area),
+        Entry(frame_areas, textvariable=telefono_mod_area)
     ]
 
-    button_agregar_area = Button(frame_area, text='Modificar', command=agregar_area, cursor='hand2')
+    button_modificar = Button(frame_areas, text='Modificar', command=agregar_area, cursor='hand2')
 
-    posicionar_formulario(lista_label_area, lista_entry_area, button_agregar_area, column=1)
+    posicionar_formulario(lista_label_area, lista_entry_area, button_modificar, column=1)
 
-    label_nueva = Label(frame_area, style='titulo.TLabel', text='Nueva Área')
+    label_nueva = Label(frame_areas, style='titulo.TLabel', text='Nueva Área')
     label_nueva.grid(column=1, row=6, columnspan=2)
 
-    lista_label_area = [
-        Label(frame_area, text='Nombre de Área *'),
-        Label(frame_area, text='Teléfono  '),
-        Label(frame_area, text='Email  ')
+    lista_label_areas = [
+        Label(frame_areas, text='Nombre de Área *'),
+        Label(frame_areas, text='Email  '),
+        Label(frame_areas, text='Teléfono  ')
     ]
-    lista_entry_area = [
-        Entry(frame_area),
-        Entry(frame_area),
-        Entry(frame_area)
+    lista_entry_areas = [
+        Entry(frame_areas, textvariable=nombre_area),
+        Entry(frame_areas, textvariable=email_area),
+        Entry(frame_areas, textvariable=telefono_area)
     ]
 
-    button_agregar_area = Button(frame_area, text='Agregar', command=agregar_area, cursor='hand2')
+    button_agregar = Button(frame_areas, text='Agregar', command=agregar_area, cursor='hand2')
 
-    posicionar_formulario(lista_label_area, lista_entry_area, button_agregar_area, column=1, row=7)
+    posicionar_formulario(lista_label_areas, lista_entry_areas, button_agregar, column=1, row=7)
 
-    notebook_contenido.add(frame_area, text='Áreas')
+    notebook_contenido.add(frame_areas, text='Áreas')
 
 def widgets_crear_ticket():
 
@@ -234,22 +265,13 @@ def widgets_crear_ticket():
         Label(frame_crear_ticket, text='Detalle *')
     ]
 
-    frame_detalle = Frame(frame_crear_ticket)
-    frame_detalle.columnconfigure(0, weight=1)
-
-    text_detalle = Text(frame_detalle, height=7, width=0, font=fuente_label)
-    scrollbar_detalle = Scrollbar(frame_detalle, command=text_detalle.yview)
-    text_detalle.config(yscrollcommand=scrollbar_detalle.set)
-    text_detalle.grid(column=0, row=0, sticky='nsew')
-    scrollbar_detalle.grid(row=0, column=1, sticky='ns')
-
     lista_entry_crear_ticket = [
         Entry(frame_crear_ticket),
-        Combobox(frame_crear_ticket,values=lista_area, state='readonly'),
-        Combobox(frame_crear_ticket,values=lista_prioridad, state='readonly'),
+        Combobox(frame_crear_ticket,values=lista_areas, state='readonly'),
+        Combobox(frame_crear_ticket,values=lista_prioridades, state='readonly'),
         Entry(frame_crear_ticket),
-        Combobox(frame_crear_ticket, values=lista_tecnico, state='readonly'),
-        frame_detalle
+        Combobox(frame_crear_ticket, values=lista_tecnicos, state='readonly'),
+        text_con_scrollbar(frame_crear_ticket)
     ]
 
     button_crear_ticket = Button(frame_crear_ticket, text='Crear', command=crear_ticket, cursor='hand2')
@@ -262,8 +284,7 @@ def widgets_mostrar_tickets():
 
     frame_mostrar_tickets = Frame()
     frame_mostrar_tickets.grid(column=0, row=0, sticky='nsew')
-    frame_mostrar_tickets.columnconfigure(0, weight=2)
-    frame_mostrar_tickets.columnconfigure(1, weight=1)
+    frame_mostrar_tickets.columnconfigure(0, weight=1)
     frame_mostrar_tickets.rowconfigure(1, weight=1)
 
     label_titulo = Label(frame_mostrar_tickets, style='titulo.TLabel', text='Tickets')
@@ -274,7 +295,7 @@ def widgets_mostrar_tickets():
     frame_treeview_tickets.columnconfigure(0, weight=1)
     frame_treeview_tickets.rowconfigure(0, weight=1)
 
-    columnas = ('numero', 'nombre', 'area', 'asunto', 'estado', 'fecha_inicio', 'ultima_modificacion')
+    columnas = ('numero', 'nombre', 'area', 'asunto', 'estado', 'fecha_inicio', 'ultima_respuesta')
 
     treeview_tickets = Treeview(frame_treeview_tickets, columns=columnas, height=20, show='headings')
 
@@ -284,15 +305,15 @@ def widgets_mostrar_tickets():
     treeview_tickets.heading('asunto', text='Asunto')
     treeview_tickets.heading('estado', text='Estado')
     treeview_tickets.heading('fecha_inicio', text='Fecha Inicio')
-    treeview_tickets.heading('ultima_modificacion', text='Última Modificación')
+    treeview_tickets.heading('ultima_respuesta', text='Última Respuesta')
 
-    treeview_tickets.column("numero", minwidth=40, width=0)
-    treeview_tickets.column("nombre", minwidth=40, width=0)
-    treeview_tickets.column("area", minwidth=40, width=0)
-    treeview_tickets.column("asunto", minwidth=40)
-    treeview_tickets.column("estado", minwidth=40, width=0)
-    treeview_tickets.column("fecha_inicio", minwidth=40, width=0)
-    treeview_tickets.column("ultima_modificacion", minwidth=40, width=0)
+    treeview_tickets.column('numero', minwidth=40, width=0)
+    treeview_tickets.column('nombre', minwidth=40, width=0)
+    treeview_tickets.column('area', minwidth=40, width=0)
+    treeview_tickets.column('asunto', minwidth=40)
+    treeview_tickets.column('estado', minwidth=40, width=0)
+    treeview_tickets.column('fecha_inicio', minwidth=40, width=0)
+    treeview_tickets.column('ultima_respuesta', minwidth=40, width=0)
 
     # datos ejemplo
     ejemplos_tickets = []
@@ -314,12 +335,58 @@ def widgets_mostrar_tickets():
 
     scrollbar_tickets = Scrollbar(frame_treeview_tickets, command=treeview_tickets.yview)
     treeview_tickets.configure(yscrollcommand=scrollbar_tickets.set)
-    scrollbar_tickets.grid(row=0, column=1, sticky='ns')
+    scrollbar_tickets.grid(row=0, column=1, rowspan=5, sticky='ns')
 
     button_modificar_ticket = Button(frame_mostrar_tickets, text='Modificar', command=modificar_ticket, cursor='hand2')
     button_modificar_ticket.grid(column=0, row=2, padx=24, pady=(12,8), ipadx=16, ipady=6, sticky='e')
 
     notebook_contenido.add(frame_mostrar_tickets, text='Mostrar Tickets')
+
+def widgets_detalle_ticket():
+
+    frame_detalle_ticket = Frame()
+    frame_detalle_ticket.columnconfigure((0,1,2), weight=1)
+    frame_detalle_ticket.grid(column=1, row=1, columnspan=2)
+
+    label_area = Label(frame_detalle_ticket, text='Administración')
+    label_fecha = Label(frame_detalle_ticket, text='12/05/2022')
+    label_hora = Label(frame_detalle_ticket, text='13:58')
+    label_nombre = Label(frame_detalle_ticket, text='Juan Pérez')
+    label_usuario = Label(frame_detalle_ticket, text='(juancitoo234)')
+
+    label_asunto = Label(frame_detalle_ticket, text='No me prende la compu aahhhh')
+    text_descripcion = text_con_scrollbar(frame_detalle_ticket)
+
+    label_area.grid(column=0, row=1)
+    label_fecha.grid(column=0, row=2)
+    label_hora.grid(column=0, row=3)
+    label_nombre.grid(column=0, row=4)
+    label_usuario.grid(column=0, row=5)
+
+    label_asunto.grid(column=1, row=1)
+    text_descripcion.grid(column=1, row=4, rowspan=4, sticky='ew')
+
+    lista_label_mostrar_ticket = [
+        
+        Label(frame_detalle_ticket, text='Código Hardware  '),
+        Label(frame_detalle_ticket, text='Prioridad *'),
+        Label(frame_detalle_ticket, text='Estado *'),
+        Label(frame_detalle_ticket, text='Técnico  '),
+        Label(frame_detalle_ticket, text='Respuesta *')
+    ]
+
+    lista_entry_mostrar_ticket = [
+        Entry(frame_detalle_ticket),
+        Combobox(frame_detalle_ticket,values=lista_prioridades, state='readonly'),
+        Combobox(frame_detalle_ticket,values=lista_estados, state='readonly'),
+        Combobox(frame_detalle_ticket, values=lista_tecnicos, state='readonly'),
+        text_con_scrollbar(frame_detalle_ticket)
+    ]
+
+    button_crear_ticket = Button(frame_detalle_ticket, text='Crear', command=crear_ticket, cursor='hand2')
+
+    posicionar_formulario(lista_label_mostrar_ticket, lista_entry_mostrar_ticket, button_crear_ticket, column=1, row=2)
+
 
 def widgets_crear_pedido():
 
@@ -341,17 +408,11 @@ def widgets_crear_pedido():
     frame_descripcion = Frame(frame_crear_pedido)
     frame_descripcion.columnconfigure(0, weight=1)
 
-    text_descripcion = Text(frame_descripcion, height=5, width=0, font=fuente_label)
-    scrollbar_descripcion = Scrollbar(frame_descripcion, command=text_descripcion.yview)
-    text_descripcion.config(yscrollcommand=scrollbar_descripcion.set)
-    text_descripcion.grid(column=0, row=0, sticky='nsew')
-    scrollbar_descripcion.grid(row=0, column=1, sticky='ns')
-
     lista_entry_crear_pedido = [
         Combobox(frame_crear_pedido, values=lista_articulos, state='readonly'),
         Entry(frame_crear_pedido),
         Spinbox(frame_crear_pedido, from_=1, to=9999),
-        frame_descripcion
+        text_con_scrollbar(frame_crear_pedido)
     ]
 
     button_agregar_detalle = Button(frame_crear_pedido, text='Agregar', command=agregar_detalle_pedido, cursor='hand2')
@@ -386,10 +447,10 @@ def widgets_crear_pedido():
     treeview_pedidos.heading('cantidad', text='Cantidad')
     treeview_pedidos.heading('descripcion', text='Descripción')
 
-    treeview_pedidos.column("articulo", minwidth=40, width=0)
-    treeview_pedidos.column("modelo", minwidth=40, width=0)
-    treeview_pedidos.column("cantidad", minwidth=40, width=0)
-    treeview_pedidos.column("descripcion", minwidth=40)
+    treeview_pedidos.column('articulo', minwidth=40, width=0)
+    treeview_pedidos.column('modelo', minwidth=40, width=0)
+    treeview_pedidos.column('cantidad', minwidth=40, width=0)
+    treeview_pedidos.column('descripcion', minwidth=40)
 
     def item_seleccionado(event):
         for i in treeview_pedidos.selection():
@@ -413,7 +474,7 @@ def widgets_crear_pedido():
 #endregion
 
 widgets_registrarse()
-widgets_area()
+widgets_areas()
 widgets_crear_ticket()
 widgets_mostrar_tickets()
 widgets_crear_pedido()
