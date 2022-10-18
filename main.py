@@ -88,7 +88,7 @@ estilo.configure('TNotebook', background=colores[1], borderwidth=0)
 estilo.configure('TNotebook.Tab', foreground=colores[1], focuscolor='none', font=fuente_button)
 estilo.map('TNotebook.Tab', background=[('selected', colores[0]), ('active', colores[5])],
 foreground=[('selected', colores[6])], font=[('selected', fuente_notebook)])
-estilo.configure('Treeview', background=colores[0], foreground=colores[5], font=fuente_label)
+estilo.configure('Treeview', background=colores[5], foreground=colores[4], font=fuente_label)
 estilo.configure('Treeview.Heading', background=colores[6], font=fuente_button)
 estilo.configure('TScrollbar', arrowsize=15, arrowcolor=colores[0])
 estilo.configure('TSpinbox', foreground=colores[4], arrowsize=15, arrowcolor=colores[0])
@@ -148,11 +148,55 @@ def widgets_area():
 
     frame_area = Frame()
     frame_area.grid(column=0, row=0, sticky='nsew')
-    frame_area.columnconfigure(1, weight=1)
-    frame_area.rowconfigure((1,2,3), weight=1)
+    frame_area.columnconfigure(0, weight=5)
+    frame_area.columnconfigure(2, weight=1)
+    frame_area.rowconfigure((1,2,3,4,7,8,9), weight=1)
 
-    label_titulo = Label(frame_area, style='titulo.TLabel', text='Agregar Área')
-    label_titulo.grid(column=0, row=0, columnspan=2)
+    label_titulo = Label(frame_area, style='titulo.TLabel', text='Áreas')
+    label_titulo.grid(column=0, row=0, columnspan=3)
+
+    frame_treeview_areas = Frame(frame_area)
+    frame_treeview_areas.grid(column=0, row=1, rowspan=10, padx=24, pady=(12,8), sticky='nsew')
+    frame_treeview_areas.columnconfigure(0, weight=1)
+    frame_treeview_areas.rowconfigure(0, weight=1)
+
+    columnas = ('nombre', 'telefono', 'email')
+
+    treeview_areas = Treeview(frame_treeview_areas, columns=columnas, height=20, show='headings')
+
+    treeview_areas.heading('nombre', text='Nombre')
+    treeview_areas.heading('telefono', text='Teléfono')
+    treeview_areas.heading('email', text='Email')
+
+    treeview_areas.column("nombre", minwidth=40, width=0)
+    treeview_areas.column("telefono", minwidth=40, width=0)
+    treeview_areas.column("email", minwidth=40, width=0)
+
+    treeview_areas.grid(column=0, row=0, sticky='nsew')
+
+    scrollbar_areas = Scrollbar(frame_treeview_areas, command=treeview_areas.yview)
+    treeview_areas.configure(yscrollcommand=scrollbar_areas.set)
+    scrollbar_areas.grid(row=0, column=1, sticky='ns')
+
+    # 2ª columna
+
+    lista_label_area = [
+        Label(frame_area, text='Nombre de Área *'),
+        Label(frame_area, text='Teléfono  '),
+        Label(frame_area, text='Email  ')
+    ]
+    lista_entry_area = [
+        Entry(frame_area),
+        Entry(frame_area),
+        Entry(frame_area)
+    ]
+
+    button_agregar_area = Button(frame_area, text='Modificar', command=agregar_area, cursor='hand2')
+
+    posicionar_formulario(lista_label_area, lista_entry_area, button_agregar_area, column=1)
+
+    label_nueva = Label(frame_area, style='titulo.TLabel', text='Nueva Área')
+    label_nueva.grid(column=1, row=6, columnspan=2)
 
     lista_label_area = [
         Label(frame_area, text='Nombre de Área *'),
@@ -167,7 +211,7 @@ def widgets_area():
 
     button_agregar_area = Button(frame_area, text='Agregar', command=agregar_area, cursor='hand2')
 
-    posicionar_formulario(lista_label_area, lista_entry_area, button_agregar_area)
+    posicionar_formulario(lista_label_area, lista_entry_area, button_agregar_area, column=1, row=7)
 
     notebook_contenido.add(frame_area, text='Áreas')
 
@@ -175,7 +219,7 @@ def widgets_crear_ticket():
 
     frame_crear_ticket = Frame()
     frame_crear_ticket.grid(column=0, row=0, sticky='nsew')
-    frame_crear_ticket.columnconfigure(1, weight=1)
+    frame_crear_ticket.columnconfigure((1,2), weight=1)
     frame_crear_ticket.rowconfigure((1,2,3,4,5,6), weight=1)
 
     label_titulo = Label(frame_crear_ticket, style='titulo.TLabel', text='Nuevo Ticket')
@@ -193,7 +237,7 @@ def widgets_crear_ticket():
     frame_detalle = Frame(frame_crear_ticket)
     frame_detalle.columnconfigure(0, weight=1)
 
-    text_detalle = Text(frame_detalle, height=5, width=0, font=fuente_label)
+    text_detalle = Text(frame_detalle, height=7, width=0, font=fuente_label)
     scrollbar_detalle = Scrollbar(frame_detalle, command=text_detalle.yview)
     text_detalle.config(yscrollcommand=scrollbar_detalle.set)
     text_detalle.grid(column=0, row=0, sticky='nsew')
@@ -218,14 +262,15 @@ def widgets_mostrar_tickets():
 
     frame_mostrar_tickets = Frame()
     frame_mostrar_tickets.grid(column=0, row=0, sticky='nsew')
-    frame_mostrar_tickets.columnconfigure((0,1), weight=1)
+    frame_mostrar_tickets.columnconfigure(0, weight=2)
+    frame_mostrar_tickets.columnconfigure(1, weight=1)
     frame_mostrar_tickets.rowconfigure(1, weight=1)
 
     label_titulo = Label(frame_mostrar_tickets, style='titulo.TLabel', text='Tickets')
     label_titulo.grid(column=0, row=0, columnspan=2)
 
     frame_treeview_tickets = Frame(frame_mostrar_tickets)
-    frame_treeview_tickets.grid(column=0, row=1, padx=24, sticky='nsew')
+    frame_treeview_tickets.grid(column=0, row=1, padx=24, pady=(12,8), sticky='nsew')
     frame_treeview_tickets.columnconfigure(0, weight=1)
     frame_treeview_tickets.rowconfigure(0, weight=1)
 
@@ -241,10 +286,10 @@ def widgets_mostrar_tickets():
     treeview_tickets.heading('fecha_inicio', text='Fecha Inicio')
     treeview_tickets.heading('ultima_modificacion', text='Última Modificación')
 
-    treeview_tickets.column("numero", minwidth=0, width=0, anchor='e')
+    treeview_tickets.column("numero", minwidth=40, width=0)
     treeview_tickets.column("nombre", minwidth=40, width=0)
     treeview_tickets.column("area", minwidth=40, width=0)
-    treeview_tickets.column("asunto", minwidth=40, width=0)
+    treeview_tickets.column("asunto", minwidth=40)
     treeview_tickets.column("estado", minwidth=40, width=0)
     treeview_tickets.column("fecha_inicio", minwidth=40, width=0)
     treeview_tickets.column("ultima_modificacion", minwidth=40, width=0)
@@ -328,7 +373,7 @@ def widgets_crear_pedido():
     posicionar_formulario(lista_label_detalle_pedido, lista_entry_detalle_pedido, column=2, row=1)
 
     frame_detalle_pedido = Frame(frame_crear_pedido)
-    frame_detalle_pedido.grid(column=2, row=3, columnspan=2, rowspan=4, padx=24, sticky='nsew')
+    frame_detalle_pedido.grid(column=2, row=3, columnspan=2, rowspan=4, padx=24, pady=(12,8), sticky='nsew')
     frame_detalle_pedido.columnconfigure(0, weight=1)
     frame_detalle_pedido.rowconfigure(0, weight=1)
 
@@ -344,7 +389,7 @@ def widgets_crear_pedido():
     treeview_pedidos.column("articulo", minwidth=40, width=0)
     treeview_pedidos.column("modelo", minwidth=40, width=0)
     treeview_pedidos.column("cantidad", minwidth=40, width=0)
-    treeview_pedidos.column("descripcion", minwidth=40, width=100)
+    treeview_pedidos.column("descripcion", minwidth=40)
 
     def item_seleccionado(event):
         for i in treeview_pedidos.selection():
