@@ -6,8 +6,8 @@ password = ''
 
 class Usuario:
     def __init__(self,):
-        self.conexion = mariadb.connect(host="localhost", user="root",
-                                        passwd=password, database="Tickets")
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
 
     def insertar(self, nombre, apellido, legajo, email, nombre_usuario, contraseña):
         con = self.conexion.cursor()
@@ -17,12 +17,12 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="usuario creado",
-                    message="Se ha agregado un nuevo usuario con éxito")
+        mb.showinfo(title='usuario creado',
+                    message='Se ha agregado un nuevo usuario con éxito')
 
     def mostrar(self):
         con = self.conexion.cursor()
-        sql = "SELECT * FROM usuario"
+        sql = 'SELECT * FROM usuario'
         con.execute(sql)
         registro = con.fetchall()
         return registro
@@ -36,8 +36,8 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="usuario modificado",
-                    message=f"Se ha modificado el usuario {nombre} {apellido} con éxito")
+        mb.showinfo(title='usuario modificado',
+                    message=f'Se ha modificado el usuario {nombre} {apellido} con éxito')
 
     def modificar_contraseña(self, id_usuario, contraseña):
         con = self.conexion.cursor()
@@ -47,8 +47,8 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="contraseña modificada",
-                    message=f"Se ha modificado la contraseña con éxito")
+        mb.showinfo(title='contraseña modificada',
+                    message=f'Se ha modificado la contraseña con éxito')
 
     def eliminar(self, id_usuario):
         con = self.conexion.cursor()
@@ -56,16 +56,36 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="usuario eliminado",
-                    message="Se ha eliminado el usuario con éxito")
+        mb.showinfo(title='usuario eliminado',
+                    message='Se ha eliminado el usuario con éxito')
+
+    def lista_usuarios(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT nombre_usuario FROM usuario'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def validar_contraseña(self, nombre_usuario, contraseña):
+        con = self.conexion.cursor()
+        sql = f'''SELECT contraseña FROM usuario where nombre_usuario = '{nombre_usuario}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        if (registro[0][0] == contraseña):
+            sql = f'''SELECT * FROM usuario where nombre_usuario = '{nombre_usuario}' '''
+            con.execute(sql)
+            registro = con.fetchall()
+            return registro
+        else:
+            mb.showerror('ERROR', 'Contraseña incorrecta')
 
 # =======================================================================================================================
 
 
 class Area:
     def __init__(self,):
-        self.conexion = mariadb.connect(host="localhost", user="root",
-                                        passwd=password, database="Tickets")
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
 
     def insertar(self, nombre, email, telefono):
         con = self.conexion.cursor()
@@ -75,12 +95,12 @@ class Area:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="area agregada",
-                    message="Se ha agregado una nueva area con éxito")
+        mb.showinfo(title='area agregada',
+                    message='Se ha agregado una nueva area con éxito')
 
     def mostrar(self):
         con = self.conexion.cursor()
-        sql = "SELECT * FROM area"
+        sql = 'SELECT * FROM area'
         con.execute(sql)
         registro = con.fetchall()
         return registro
@@ -92,8 +112,8 @@ class Area:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="area modificada",
-                    message=f"Se ha modificado el area {nombre} con éxito")
+        mb.showinfo(title='area modificada',
+                    message=f'Se ha modificado el area {nombre} con éxito')
 
     def eliminar(self, id_area):
         con = self.conexion.cursor()
@@ -101,16 +121,16 @@ class Area:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="area eliminada",
-                    message="Se ha eliminado el area con éxito")
+        mb.showinfo(title='area eliminada',
+                    message='Se ha eliminado el area con éxito')
 
 # =========================================================================================================================
 
 
 class TipoProblema:
     def __init__(self):
-        self.conexion = mariadb.connect(host="localhost", user="root",
-                                        passwd=password, database="Tickets")
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
 
     def insertar(self, nombre):
         con = self.conexion.cursor()
@@ -120,12 +140,12 @@ class TipoProblema:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="tipo de problema",
-                    message="Se ha agregado uno nuevo tipo de problema")
+        mb.showinfo(title='tipo de problema',
+                    message='Se ha agregado uno nuevo tipo de problema')
 
     def mostrar(self):
         con = self.conexion.cursor()
-        sql = "SELECT * FROM tipo_problema"
+        sql = 'SELECT * FROM tipo_problema'
         con.execute(sql)
         registro = con.fetchall()
         return registro
@@ -142,8 +162,8 @@ class TipoProblema:
 
 class Articulo:
     def __init__(self):
-        self.conexion = mariadb.connect(host="localhost", user="root",
-                                        passwd=password, database="Tickets")
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
 
     def insertar(self, nombre):
         con = self.conexion.cursor()
@@ -153,12 +173,12 @@ class Articulo:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="articulo",
-                    message="Se ha agregado un nuevo articulo")
+        mb.showinfo(title='articulo',
+                    message='Se ha agregado un nuevo articulo')
 
     def mostrar(self):
         con = self.conexion.cursor()
-        sql = "SELECT * FROM articulo"
+        sql = 'SELECT * FROM articulo'
         con.execute(sql)
         registro = con.fetchall()
         return registro

@@ -1,5 +1,5 @@
 from os import path
-from tkinter import BooleanVar, PhotoImage, IntVar, StringVar, Tk, Text, Toplevel, messagebox as mb
+from tkinter import PhotoImage, IntVar, StringVar, Tk, Text, Toplevel, messagebox as mb
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Notebook, Scrollbar, Spinbox, Style, Treeview, Checkbutton
 from tkinter.font import Font
 from clases import *
@@ -73,14 +73,26 @@ def registrar_usuario():
     apellido = apellido_usuario.get().strip()
     legajo = legajo_usuario.get().strip()
     email = email_usuario.get().strip()
-    nombre_usuarioo = nombre_usuario_usuario.get().strip() # esta variable tiene dos o porque no andaba el get del nombre
+    nombre_usuarioo = nombre_usuario_usuario.get().strip().lower() # esta variable tiene dos o porque no andaba el get del nombre
     contraseña = contraseña_usuario.get().strip()
     repetir_contraseña = repetir_contraseña_usuario.get().strip()
+    
+    if '@' not in email:
+        mb.showerror('ERROR', 'Ingrese un email válido')
+        return
+    if len(contraseña) < 4:
+        mb.showerror('ERROR', 'Las contraseña no debe tener menos de 4 dígitos')
+        return
     if contraseña != repetir_contraseña:
         mb.showerror('ERROR', 'Las contraseñas no coinciden')
         return
+    usuario = Usuario()
+    for i in usuario.lista_usuarios():
+        if i[0] == nombre_usuarioo:
+            mb.showerror('ERROR', 'El nombre de usuario ya existe')
+            return
+    
     if validar_obligatorios((nombre, apellido, legajo, email, nombre_usuarioo, contraseña)):
-        usuario = Usuario()
         usuario.insertar(nombre, apellido, legajo, email, nombre_usuarioo, contraseña)
         vaciar_entry(widgets_registrarse.lista_entry)
         actualizar_treeview(usuario, widgets_usuarios.treeview)
@@ -88,7 +100,7 @@ def registrar_usuario():
 
 def modificar_usuario():
     global ventana_emergente
-    mensaje = mb.askyesno("Modificar Usuario", "¿Seguro desea modificar el usuario?")
+    mensaje = mb.askyesno('Modificar Usuario', '¿Seguro desea modificar el usuario?')
     if mensaje == True:
         id_usuario = id_mod_usuario.get()
         nombre = nombre_mod_usuario.get().strip()
@@ -132,7 +144,7 @@ def agregar_area():
 
 
 def modificar_area():
-    mensaje = mb.askyesno("Modificar Área", "¿Seguro desea modificar el área?")
+    mensaje = mb.askyesno('Modificar Área', '¿Seguro desea modificar el área?')
     if mensaje == True:
         id_area = id_mod_area.get()
         nombre = nombre_mod_area.get().strip()
@@ -145,7 +157,7 @@ def modificar_area():
 
 
 def eliminar_area():
-    mensaje = mb.askyesno("Eliminar Área", "¿Seguro desea eliminar el área?")
+    mensaje = mb.askyesno('Eliminar Área', '¿Seguro desea eliminar el área?')
     if mensaje == True:
         widgets_areas.button_eliminar.config(state='disabled')
         widgets_areas.button_modificar.config(state='disabled')
@@ -159,7 +171,20 @@ def eliminar_area():
 def crear_ticket():
     print('crear ticket')
 
-
+def iniciar_sesion():
+    global usuario_actual
+    nombre_usuarioo = nombre_usuario_iniciar.get().lower()
+    contraseña = contraseña_iniciar.get()
+    usuario = Usuario()
+    for i in usuario.lista_usuarios():
+        if i[0] == nombre_usuarioo:
+            usuario.validar_contraseña(nombre_usuarioo, contraseña)
+            break
+    else:
+        mb.showerror('ERROR', 'El nombre de usuario no existe')
+        return
+    # usuario_actual = Usuario(id_usuario, id_tipo_usuario, nombre, apellido,
+    #                          legajo, email, activo, nombre_usuarioo, contraseña)
 
 def crear_pedido():
     print('crear pedido')
@@ -201,22 +226,17 @@ ventana.rowconfigure(0, weight=1)
 img_municipalidad = PhotoImage(file=carpeta+'/img/logo_muni.png')
 img_municipalidad = img_municipalidad.subsample(2, 2)
 
-fuente_titulo = Font(family='Segoe UI', size=int(
-    18*tamaño_fuente[0]), slant='italic')
-fuente_subtitulo = Font(family='Segoe UI', size=int(
-    16*tamaño_fuente[0]))
+fuente_titulo = Font(family='Segoe UI', size=int(18*tamaño_fuente[0]), slant='italic')
+fuente_subtitulo = Font(family='Segoe UI', size=int(14*tamaño_fuente[0]))
 fuente_pie = Font(family='Segoe UI', size=int(8*tamaño_fuente[0]))
-fuente_button = Font(family='Segoe UI', size=int(
-    12*tamaño_fuente[0]), weight='bold')
+fuente_button = Font(family='Segoe UI', size=int(12*tamaño_fuente[0]), weight='bold')
 fuente_label = Font(family='Segoe UI', size=int(12*tamaño_fuente[0]))
-fuente_notebook = Font(family='Segoe UI', size=int(
-    14*tamaño_fuente[0]), weight='bold')
+fuente_notebook = Font(family='Segoe UI', size=int(14*tamaño_fuente[0]), weight='bold')
 
 estilo = Style()
 estilo.theme_use('alt')
 
-estilo.configure(
-    'TCombobox', foreground=colores[4], arrowsize=15, arrowcolor=colores[0])
+estilo.configure('TCombobox', foreground=colores[4], arrowsize=15, arrowcolor=colores[0])
 ventana.option_add('*TCombobox*Font', fuente_label)
 ventana.option_add('*TCombobox*Listbox*Font', fuente_label)
 estilo.configure('TEntry', foreground=colores[4])
@@ -227,7 +247,7 @@ estilo.configure(
 estilo.configure(
     'titulo.TLabel', background=colores[0], foreground=colores[6], font=fuente_titulo, justify='center')
 estilo.configure(
-    'subtitulo.TLabel', background=colores[0], foreground=colores[6], font=fuente_subtitulo, justify='center')
+    'subtitulo.TLabel', background=colores[0], foreground=colores[5], font=fuente_subtitulo, justify='center')
 estilo.configure(
     'pie.TLabel', background=colores[0], foreground=colores[3], font=fuente_pie)
 estilo.configure(
@@ -264,6 +284,8 @@ label_pie.grid(column=0, row=1, columnspan=2, sticky='w')
 
 # region variables
 
+usuario_actual = None
+#=============================
 nombre_area = StringVar()
 email_area = StringVar()
 telefono_area = StringVar()
@@ -288,6 +310,8 @@ nombre_usuario_mod_usuario = StringVar()
 contraseña_mod_usuario = StringVar()
 activo_mod_usuario = IntVar()
 # ==========================================
+nombre_usuario_iniciar = StringVar()
+contraseña_iniciar = StringVar()
 # endregion
 
 # region widgets
@@ -338,6 +362,44 @@ class WidgetsRegistrarse:
         notebook_contenido.add(self.frame, text='Registrarse')
 
 
+class WidgetsIniciarSesion:
+    def __init__(self):
+
+        self.frame = Frame()
+        self.frame.grid(column=0, row=0, sticky='nsew')
+        self.frame.columnconfigure(1, weight=1)
+        self.frame.columnconfigure(2, weight=1)
+        self.frame.rowconfigure((1, 2, 3, 4, 5), weight=1)
+
+        self.label_img_municipalidad = Label(self.frame, image=img_municipalidad)
+        self.label_img_municipalidad.grid(column=2, row=1, rowspan=8)
+
+        self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Registrarse en el Sistema')
+        self.label_titulo.grid(column=0, row=0, columnspan=3)
+
+        self.lista_label = [
+            Label(self.frame),
+            Label(self.frame, text='Nombre de Usuario *'),
+            Label(self.frame, text='Contraseña *'),
+            Label(self.frame),
+            Label(self.frame)
+        ]
+        self.lista_entry = [
+            Label(self.frame),
+            Entry(self.frame, textvariable=nombre_usuario_iniciar),
+            Entry(self.frame, show='*', textvariable=contraseña_iniciar),
+            Label(self.frame),
+            Label(self.frame)
+        ]
+
+        self.button_iniciar_sesion = Button(self.frame, text='Iniciar Sesión', command=iniciar_sesion, cursor='hand2')
+
+        posicionar_formulario(
+            self.lista_label, self.lista_entry, self.button_iniciar_sesion)
+
+        notebook_contenido.add(self.frame, text='Iniciar Sesión')
+
+
 class WidgetsUsuarios:
     def __init__(self):
 
@@ -346,8 +408,7 @@ class WidgetsUsuarios:
         self.frame.columnconfigure(0, weight=1)
         self.frame.rowconfigure(1, weight=1)
 
-        self.label_titulo = Label(
-            self.frame, style='titulo.TLabel', text='Usuarios')
+        self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Usuarios')
         self.label_titulo.grid(column=0, row=0)
 
         self.frame_treeview = Frame(self.frame)
@@ -357,10 +418,9 @@ class WidgetsUsuarios:
         self.frame_treeview.rowconfigure(0, weight=1)
 
         self.columnas = ('id', 'tipo_usuario', 'nombre', 'apellido', 'legajo',
-                         'email', 'activo')
+                         'email', 'activo', 'nombre_usuario')
 
-        self.treeview = Treeview(
-            self.frame_treeview, columns=self.columnas, height=20, show='headings')
+        self.treeview = Treeview(self.frame_treeview, columns=self.columnas, height=20, show='headings')
 
         self.treeview.heading('id', text='ID')
         self.treeview.heading('tipo_usuario', text='Tipo de usuario')
@@ -369,6 +429,7 @@ class WidgetsUsuarios:
         self.treeview.heading('legajo', text='Legajo')
         self.treeview.heading('email', text='Email')
         self.treeview.heading('activo', text='Activo')
+        self.treeview.heading('nombre_usuario', text='Nombre de Usuario')
 
         self.treeview.column('id', minwidth=40, width=0)
         self.treeview.column('tipo_usuario', minwidth=40, width=0)
@@ -377,22 +438,21 @@ class WidgetsUsuarios:
         self.treeview.column('legajo', minwidth=40, width=0)
         self.treeview.column('email', minwidth=40, width=0)
         self.treeview.column('activo', minwidth=40, width=0)
+        self.treeview.column('nombre_usuario', minwidth=40, width=0)
 
         self.treeview.grid(column=0, row=0, sticky='nsew')
 
-        self.scrollbar = Scrollbar(
-            self.frame_treeview, command=self.treeview.yview)
+        self.scrollbar = Scrollbar( self.frame_treeview, command=self.treeview.yview)
         self.treeview.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.grid(row=0, column=1, sticky='ns')
 
         self.button_modificar = Button(self.frame, text='Modificar', command=mostrar_usuario, state='disabled', cursor='hand2')
-        self.button_modificar.grid(column=0, row=2, padx=24, pady=(
-            12, 8), ipadx=16, ipady=6, sticky='e')
+        self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
         actualizar_treeview(Usuario(), self.treeview)
 
         self.lista_variables_mod = [None, None, nombre_mod_usuario, apellido_mod_usuario, legajo_mod_usuario,
-                                    email_mod_usuario, activo_mod_usuario]
+                                    email_mod_usuario, activo_mod_usuario, nombre_usuario_mod_usuario]
 
         def item_seleccionado(event):
             self.button_modificar.config(state='normal')
@@ -419,15 +479,16 @@ class WidgetsModificarUsuario:
         self.frame.grid(column=0, row=0, sticky='nsew')
         self.frame.columnconfigure(1, weight=1)
         self.frame.columnconfigure(2, weight=1)
-        self.frame.rowconfigure((1, 2, 3, 4, 5), weight=1)
+        self.frame.rowconfigure((1, 2, 3, 4, 5, 6), weight=1)
 
         self.label_img_municipalidad = Label(
             self.frame, image=img_municipalidad)
         self.label_img_municipalidad.grid(column=2, row=1, rowspan=8)
 
-        self.label_titulo = Label(
-            self.frame, style='titulo.TLabel', text='Modificar Usuario')
+        self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Modificar Usuario')
         self.label_titulo.grid(column=0, row=0, columnspan=3)
+        self.label_nombre_usuario = Label(self.frame, style='subtitulo.TLabel', text=nombre_usuario_mod_usuario.get())
+        self.label_nombre_usuario.grid(column=0, row=1, columnspan=3)
 
         self.lista_label = [
             Label(self.frame, text='Nombre *'),
@@ -450,8 +511,7 @@ class WidgetsModificarUsuario:
         self.button_aceptar = Button(
             self.frame, text='aceptar', command=modificar_usuario, cursor='hand2')
 
-        posicionar_formulario(
-            self.lista_label, self.lista_entry, self.button_aceptar)
+        posicionar_formulario(self.lista_label, self.lista_entry, self.button_aceptar, row=2)
 
 
 class WidgetsAreas:
@@ -673,49 +733,52 @@ class WidgetsModificarTicket:
 
         self.frame = Frame(toplevel)
         self.frame.grid(column=0, row=0, sticky='nsew')
-        self.frame.columnconfigure(1, weight=1)
-        self.frame.columnconfigure(2, weight=1)
-        self.frame.rowconfigure((1, 2, 3, 4, 5,6,7,8,9,10,11), weight=1)
+        self.frame.columnconfigure(1, weight=2)
+        self.frame.columnconfigure((1,3,5), weight=1)
+        self.frame.rowconfigure((1,2,3,4,5,6,7,8,9,10,11,12), weight=1)
 
-        self.label_titulo = Label(
-            self.frame, style='titulo.TLabel', text='Modificar Ticket')
-        self.label_titulo.grid(column=0, row=0, columnspan=3)
-        self.label_asunto = Label(
-            self.frame, style='subtitulo.TLabel', text='Asunto')
-        self.label_asunto.grid(column=0, row=1, columnspan=3)
+        self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Modificar Ticket')
+        self.label_titulo.grid(column=0, row=0, columnspan=6)
+
+        self.label_asunto = Label(self.frame, style='subtitulo.TLabel', text='No me funciona el monitor ahhh')
+        self.label_asunto.grid(column=0, row=1, columnspan=4, padx=24)
+
+        self.label_fecha = Label(self.frame, text='22/07/2022 10:35')
+        self.label_fecha.grid(column=4, row=1, padx=(24,8))
+
+        self.combobox_estado = Combobox(self.frame, state='readonly')
+        self.combobox_estado.grid(column=5, row=1, padx=(8,24), ipady=3, sticky='ew')
 
         self.lista_label = [
             Label(self.frame, text='Usuario *'),
-            Label(self.frame, text='Área *'),
-            Label(self.frame, text='Estado *'),
-            Label(self.frame, text='Prioridad *'),
-            Label(self.frame, text='Técnico  '),
-            Label(self.frame, text='Tipo Problema *'),
-            Label(self.frame, text='Fecha Inicio *'),
-            Label(self.frame, text='Fecha Cierre *'),
-            Label(self.frame, text='Código Hardware  '),
-
+            Label(self.frame, text='Área *')
         ]
         self.lista_entry = [
             Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario),
-            Entry(self.frame, textvariable=legajo_mod_usuario),
-            Entry(self.frame, textvariable=email_mod_usuario),
-            Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario),
-            Entry(self.frame, textvariable=legajo_mod_usuario),
-            Entry(self.frame, textvariable=email_mod_usuario),
-            Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario),
-            Entry(self.frame, textvariable=legajo_mod_usuario)
-
+            Entry(self.frame, textvariable=apellido_mod_usuario)
         ]
-
+        self.lista_label_2 = [
+            Label(self.frame, text='Tipo Problema *'),
+            Label(self.frame, text='Código Hardware  ')
+        ]
+        self.lista_entry_2 = [
+            Entry(self.frame, textvariable=nombre_mod_usuario),
+            Entry(self.frame, textvariable=apellido_mod_usuario)
+        ]
+        self.lista_label_3 = [
+            Label(self.frame, text='Prioridad *'),
+            Label(self.frame, text='Técnico  ')
+        ]
+        self.lista_entry_3 = [
+            Entry(self.frame, textvariable=nombre_mod_usuario),
+            Entry(self.frame, textvariable=apellido_mod_usuario)
+        ]
         self.button_aceptar = Button(
             self.frame, text='aceptar', command=modificar_ticket, cursor='hand2')
 
-        posicionar_formulario(
-            self.lista_label, self.lista_entry, self.button_aceptar, row=2)
+        posicionar_formulario(self.lista_label, self.lista_entry, row=2)
+        posicionar_formulario(self.lista_label_2, self.lista_entry_2, column=2, row=2)
+        posicionar_formulario(self.lista_label_3, self.lista_entry_3, column=4, row=2)
 
 
 class WidgetsCrearPedido():
@@ -816,14 +879,28 @@ class VentanaEmergente:
     def __init__(self):
         self.top = Toplevel(ventana)
         self.top.config()
-        self.top.geometry("800x600")
-        self.top.title("Modificacion Usuario")
+        self.top.geometry('800x600')
+        self.top.title('Modificacion Usuario')
         self.top.columnconfigure(0, weight=1)
         self.top.rowconfigure(0, weight=1)
+
+class UsuarioActual:
+    def __init__(self, id_usuario, id_tipo_usuario, nombre, apellido,
+                 legajo, email, activo, nombre_usuario, contraseña):
+        self.id_usuario = id_usuario
+        self.id_tipo_usuario = id_tipo_usuario
+        self.nombre = nombre
+        self.apellido = apellido
+        self.legajo = legajo
+        self.email = email
+        self.activo = activo
+        self.nombre_usuario = nombre_usuario
+        self.contraseña = contraseña
 
 # endregion
 
 ventana_emergente = None
+widgets_iniciar_sesion = WidgetsIniciarSesion()
 widgets_registrarse = WidgetsRegistrarse()
 widgets_areas = WidgetsAreas()
 widgets_crear_ticket = WidgetsCrearTicket()
@@ -832,6 +909,3 @@ widgets_crear_pedido = WidgetsCrearPedido()
 widgets_usuarios = WidgetsUsuarios()
 
 ventana.mainloop()
-
-
-# Ticket, pedido, detalle pedido y respuesta FALTAN!
