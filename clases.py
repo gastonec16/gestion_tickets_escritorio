@@ -86,11 +86,12 @@ class Ticket:
         self.conexion = mariadb.connect(host="localhost", user="root",
                                         passwd=password, database="Tickets")
 
-    def insertar(self, id_usuario, asunto, area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema):
+    def insertar(self, id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema):
         con = self.conexion.cursor()
         # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO Ticket (id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
-        VALUES('{id_usuario}','{asunto}','{area}', '{codigo_hardware}','{descripcion}','{fecha_inicio}', '{hora_inicio}', '{id_tipo_problema}')'''
+        VALUES({id_usuario},'{asunto}',{id_area}, '{codigo_hardware}','{descripcion}','{fecha_inicio}', '{hora_inicio}', {id_tipo_problema})'''
+        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
@@ -100,6 +101,14 @@ class Ticket:
     def mostrar(self):
         con = self.conexion.cursor()
         sql = "SELECT * FROM Ticket"
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def mostrar_resumido(self):
+        con = self.conexion.cursor()
+        sql = '''SELECT id_ticket, id_usuario, id_area, id_estado,
+                id_prioridad, id_tecnico, asunto, fecha_inicio FROM Ticket'''
         con.execute(sql)
         registro = con.fetchall()
         return registro
@@ -115,7 +124,7 @@ class Ticket:
         mb.showinfo(title="ticket modificado",
                     message=f"Se ha modificado el ticket {asunto} con éxito")
 
-    def Archivar(self, id_ticket):
+    def archivar(self, id_ticket):
         con = self.conexion.cursor()
         sql = f'''UPDATE Ticket SET id_estado = 4 where id_ticket = {id_ticket}'''
         con.execute(sql)
@@ -150,13 +159,20 @@ class Area:
 
     def modificar(self, id_area, nombre, email, telefono):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''UPDATE area SET nombre='{nombre}',email='{email}',telefono='{telefono}' WHERE id_area ={id_area}'''
         con.execute(sql)
         self.conexion.commit()
         con.close()
         mb.showinfo(title='area modificada',
                     message=f'Se ha modificado el area {nombre} con éxito')
+
+    def obtener_id(self, nombre):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_area FROM area where nombre = '{nombre}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        print('registr ',registro)
+        return registro[0][0]
 
     def eliminar(self, id_area):
         con = self.conexion.cursor()
@@ -167,6 +183,12 @@ class Area:
         mb.showinfo(title='area eliminada',
                     message='Se ha eliminado el area con éxito')
 
+    def lista_areas(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT nombre FROM area'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
 # =========================================================================================================================
 
 
@@ -199,6 +221,14 @@ class TipoProblema:
         con.execute(sql)
         self.conexion.commit()
         con.close()
+
+    def obtener_id(self, nombre):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_tipo_problema FROM tipo_problema where nombre = '{nombre}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        print('registr ',registro)
+        return registro[0][0]
 
 # ========================================================================================================================
 

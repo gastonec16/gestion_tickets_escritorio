@@ -22,7 +22,6 @@ def posicionar_formulario(lista_label, lista_entry, button=None, column=0, row=1
         button.grid(column=column+1, row=row_entry, padx=24,
                     pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
-
 def vaciar_entry(lista_entry):
     for i in lista_entry:
         i.delete(0, 'end')
@@ -35,11 +34,15 @@ def validar_obligatorios(lista_variables):
     else:
         return True
 
+def crear_treeview(clase, treeview):
+    for i in clase.mostrar():
+        treeview.insert('', 'end', values=i)
+        
 def actualizar_treeview(clase, treeview):
     treeview.delete(*treeview.get_children())
     for i in clase.mostrar():
         treeview.insert('', 'end', values=i)
-
+    actualizar_comboboxes()
 
 def mostrar_usuario():
     global ventana_emergente
@@ -118,22 +121,20 @@ def modificar_usuario():
 
 #====================================================================================================================
 def crear_ticket():    
+    area = Area()
+    tipo_problema = TipoProblema()
     id_usuario = 5                                 #ticket
     asunto = asunto_ticket.get()
-    area = area_ticket.get()
-    print(area)
+    id_area = area.obtener_id(area_ticket.get())
     codigo_hardware = codigo_hardware_ticket.get()
-    descripcion = widgets_crear_ticket.text.get('1', 'end')
-    print(descripcion)
+    descripcion = widgets_crear_ticket.text.get('1.0', 'end')
     fecha_inicio = strftime('%Y/%m/%d')
-    hora_inicio = strftime('%H:%M')
-    id_tipo_problema = 1
+    hora_inicio = strftime('%H:%M:%S')
+    id_tipo_problema = tipo_problema.obtener_id(tipo_problema_ticket.get())
     ticket = Ticket()
-    ticket.insertar(id_usuario, asunto, 2, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
+    ticket.insertar(id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
     vaciar_entry(widgets_registrarse.lista_entry)
     actualizar_treeview(ticket, widgets_mostrar_tickets.treeview)
-    
-
 
 def modificar_ticket():
     asunto = asunto_mod_ticket.get()
@@ -157,19 +158,22 @@ def eliminar_ticket():
         vaciar_entry(widgets_mostrar_tickets.lista_entry)
         actualizar_treeview(Ticket, widgets_mostrar_tickets.treeview)
 #===============================================================================================================
-# =========================================================================================
-
+#=========================================================================================
 
 def agregar_area():
     nombre = nombre_area.get().strip()
     email = email_area.get().strip()
     telefono = telefono_area.get().strip()
+    area = Area()
+    for i in area.lista_areas():
+        if i[0].lower() == nombre.lower():
+            mb.showerror('ERROR', 'Ya existe un área con ese nombre')
+            return
     if validar_obligatorios((nombre,)):
         area = Area()
         area.insertar(nombre, email, telefono)
         vaciar_entry(widgets_areas.lista_entry)
         actualizar_treeview(area, widgets_areas.treeview)
-        actualizar_listas()
 
 
 def modificar_area():
@@ -218,25 +222,30 @@ def crear_pedido():
 def agregar_detalle_pedido():
     print('agregar detalle pedido')
 
-
-lista_areas = []
-lista_tipos_problema = []
-
 def actualizar_listas():
     global lista_areas
     global lista_tipos_problema
 
-    lista_areas = []
     area = Area()
     areas = area.mostrar()
+
+    lista_areas = []
     for i in areas:
         lista_areas.append(i[1])
 
-    lista_tipos_problema = []
     tipo_problema = TipoProblema()
     tipos_problema = tipo_problema.mostrar()
+
+    lista_tipos_problema = []
     for i in tipos_problema:
         lista_tipos_problema.append(i[1])
+
+def actualizar_comboboxes():
+    actualizar_listas()
+
+    widgets_crear_ticket.lista_entry[1].config(values=lista_areas)
+    widgets_crear_ticket.lista_entry[3].config(values=lista_tipos_problema)
+
 
 lista_prioridades = ['Baja', 'Media', 'Alta']
 
@@ -356,12 +365,11 @@ contraseña_iniciar = StringVar()
 # ==========================================
 
 asunto_ticket = StringVar()                                    #string var de tickets
-area_ticket = IntVar()
+area_ticket = StringVar()
 prioridad_ticket = StringVar()
-tipo_problema_ticket = IntVar()
+tipo_problema_ticket = StringVar()
 codigo_hardware_ticket = StringVar()
 descripcion_ticket = StringVar()
-
 
 asunto_mod_ticket = StringVar()
 area_mod_ticket = StringVar()
@@ -370,6 +378,8 @@ codigo_hardware_mod_ticket = StringVar()
 tecnico_mod_ticket =StringVar()
 descripcion_mod_ticket = StringVar()
 
+lista_areas = []
+lista_tipos_problema = []
 #====================================
 # endregion
 
@@ -508,7 +518,7 @@ class WidgetsUsuarios:
         self.button_modificar = Button(self.frame, text='Modificar', command=mostrar_usuario, state='disabled', cursor='hand2')
         self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
-        actualizar_treeview(Usuario(), self.treeview)
+        crear_treeview(Usuario(), self.treeview)
 
         self.lista_variables_mod = [None, None, nombre_mod_usuario, apellido_mod_usuario, legajo_mod_usuario,
                                     email_mod_usuario, activo_mod_usuario, nombre_usuario_mod_usuario]
@@ -647,7 +657,7 @@ class WidgetsAreas:
             Entry(self.frame, textvariable=telefono_area)
         ]
 
-        actualizar_treeview(Area(), self.treeview)
+        crear_treeview(Area(), self.treeview)
 
         self.lista_variables_mod = [
             None, nombre_mod_area, email_mod_area, telefono_mod_area]
@@ -716,11 +726,9 @@ class WidgetsCrearTicket:
             self.frame_text
         ]
 
-        self.button_crear = Button(
-            self.frame, text='Crear', command=crear_ticket, cursor='hand2')
+        self.button_crear = Button(self.frame, text='Crear', command=crear_ticket, cursor='hand2')
 
-        posicionar_formulario(
-            self.lista_label, self.lista_entry, self.button_crear)
+        posicionar_formulario(self.lista_label, self.lista_entry, self.button_crear)
 
         notebook_contenido.add(self.frame, text='Crear Ticket')
 
@@ -742,35 +750,28 @@ class WidgetsMostrarTickets:
         self.frame_treeview.columnconfigure(0, weight=1)
         self.frame_treeview.rowconfigure(0, weight=1)
 
-        self.columnas = ('numero', 'nombre', 'area', 'asunto',
-                         'estado', 'fecha_inicio', 'ultima_respuesta')
+        self.columnas = ('numero', 'usuario', 'area', 'estado', 
+                         'prioridad', 'tecnico', 'asunto', 'fecha_inicio')
 
-        self.treeview = Treeview(
-            self.frame_treeview, columns=self.columnas, height=20, show='headings')
+        self.treeview = Treeview(self.frame_treeview, columns=self.columnas, height=20, show='headings')
 
         self.treeview.heading('numero', text='Nº')
-        self.treeview.heading('nombre', text='Nombre')
+        self.treeview.heading('usuario', text='Usuario')
         self.treeview.heading('area', text='Área')
-        self.treeview.heading('asunto', text='Asunto')
         self.treeview.heading('estado', text='Estado')
+        self.treeview.heading('prioridad', text='Prioridad')
+        self.treeview.heading('tecnico', text='Técnico')
+        self.treeview.heading('asunto', text='Asunto')
         self.treeview.heading('fecha_inicio', text='Fecha Inicio')
-        self.treeview.heading('ultima_respuesta', text='Última Respuesta')
 
         self.treeview.column('numero', minwidth=40, width=0)
-        self.treeview.column('nombre', minwidth=40, width=0)
+        self.treeview.column('usuario', minwidth=40, width=0)
         self.treeview.column('area', minwidth=40, width=0)
-        self.treeview.column('asunto', minwidth=40)
         self.treeview.column('estado', minwidth=40, width=0)
-        self.treeview.column('fecha_inicio', minwidth=40, width=0)
-        self.treeview.column('ultima_respuesta', minwidth=40, width=0)
-
-        # datos ejemplo
-        ejemplos = []
-        for i in range(1, 101):
-            ejemplos.append((f'#{i}', f'Nombre {i}', f'Área {i}', f'Asunto {i}',
-                            f'Estado {i}', f'Fecha Inicio {i}', f'Última Modificación {i}'))
-        for i in ejemplos:
-            self.treeview.insert('', 'end', values=i)
+        self.treeview.column('prioridad', minwidth=40, width=0)
+        self.treeview.column('tecnico', minwidth=40, width=0)
+        self.treeview.column('asunto', minwidth=40)
+        self.treeview.column('fecha_inicio', minwidth=40, width=40)
 
         def item_seleccionado(event):
             self.button_modificar.config(state='normal')
@@ -782,6 +783,7 @@ class WidgetsMostrarTickets:
             except:
                 pass
 
+
         self.treeview.bind('<<TreeviewSelect>>', item_seleccionado)
 
         self.treeview.grid(column=0, row=0, sticky='nsew')
@@ -792,6 +794,10 @@ class WidgetsMostrarTickets:
 
         self.button_modificar = Button(self.frame, text='Modificar', command=mostrar_ticket, state='disabled', cursor='hand2')
         self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
+
+        self.ticket = Ticket()
+        for i in self.ticket.mostrar_resumido():
+            self.treeview.insert('', 'end', values=i)
 
         notebook_contenido.add(self.frame, text='Mostrar Tickets')
 
@@ -857,8 +863,7 @@ class WidgetsCrearPedido():
         self.frame.columnconfigure((1, 3), weight=1)
         self.frame.rowconfigure((1, 2, 3, 4, 5, 6), weight=1)
 
-        self.label_titulo = Label(
-            self.frame, style='titulo.TLabel', text='Nuevo Pedido de Abastecimiento')
+        self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Nuevo Pedido de Abastecimiento')
         self.label_titulo.grid(column=0, row=0, columnspan=4)
 
         self.lista_label = [
@@ -991,3 +996,5 @@ widgets_usuarios = WidgetsUsuarios()
 print(lista_areas)
 
 ventana.mainloop()
+
+#agregar formulario tipo problema
