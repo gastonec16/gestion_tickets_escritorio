@@ -11,7 +11,6 @@ class Usuario:
 
     def insertar(self, nombre, apellido, legajo, email, nombre_usuario, contraseña):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO usuario (nombre, apellido, legajo, email, nombre_usuario, contraseña)
         VALUES('{nombre}','{apellido}','{legajo}','{email}','{nombre_usuario}', '{contraseña}')'''
         con.execute(sql)
@@ -29,7 +28,6 @@ class Usuario:
 
     def modificar(self, id_usuario, nombre, apellido, legajo, email, activo):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''UPDATE usuario SET nombre = '{nombre}', apellido = '{apellido}', 
         legajo = '{legajo}', email = '{email}', activo= '{activo}'
         WHERE id_usuario ={id_usuario}'''
@@ -41,7 +39,6 @@ class Usuario:
 
     def modificar_contraseña(self, id_usuario, contraseña):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''UPDATE usuario SET contraseña = '{contraseña}'
         WHERE id_usuario ={id_usuario}'''
         con.execute(sql)
@@ -79,6 +76,13 @@ class Usuario:
         else:
             mb.showerror('ERROR', 'Contraseña incorrecta')
 
+    def obtener_campo(self, campo, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT {campo} FROM usuario where id_usuario = '{id}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+
 #===========================================================================================================================
 
 class Ticket:
@@ -88,10 +92,8 @@ class Ticket:
 
     def insertar(self, id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO Ticket (id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
         VALUES({id_usuario},'{asunto}',{id_area}, '{codigo_hardware}','{descripcion}','{fecha_inicio}', '{hora_inicio}', {id_tipo_problema})'''
-        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
@@ -115,7 +117,6 @@ class Ticket:
 
     def modificar(self, id_ticket, asunto, area, prioridad, codigo_hardware, tecnico, descripcion):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''UPDATE ticket SET asunto = {asunto}', id_area ='{area}', id_prioridad ='{prioridad}',
          codigo_hardware ='{codigo_hardware}', tecnico ='{tecnico}', descripcion = '{descripcion}' WHERE id_ticket ={id_ticket}'''
         con.execute(sql)
@@ -135,13 +136,12 @@ class Ticket:
 # =========================================================================================================================
 
 class Area:
-    def __init__(self,):
+    def __init__(self):
         self.conexion = mariadb.connect(host='localhost', user='root',
                                         passwd=password, database='Tickets')
 
     def insertar(self, nombre, email, telefono):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO area (nombre, email, telefono)
         VALUES('{nombre}','{email}','{telefono}')'''
         con.execute(sql)
@@ -171,7 +171,6 @@ class Area:
         sql = f'''SELECT id_area FROM area where nombre = '{nombre}' '''
         con.execute(sql)
         registro = con.fetchall()
-        print('registr ',registro)
         return registro[0][0]
 
     def eliminar(self, id_area):
@@ -189,6 +188,14 @@ class Area:
         con.execute(sql)
         registro = con.fetchall()
         return registro
+
+    def obtener_nombre(self, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT nombre FROM area where id_area = {id} '''
+        con.execute(sql)
+        registro = con.fetchall()
+        print(registro)
+        return registro[0][0]
 # =========================================================================================================================
 
 
@@ -199,7 +206,6 @@ class TipoProblema:
 
     def insertar(self, nombre):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO tipo_problema (nombre)
         VALUES('{nombre}')'''
         con.execute(sql)
@@ -227,7 +233,13 @@ class TipoProblema:
         sql = f'''SELECT id_tipo_problema FROM tipo_problema where nombre = '{nombre}' '''
         con.execute(sql)
         registro = con.fetchall()
-        print('registr ',registro)
+        return registro[0][0]
+
+    def obtener_nombre(self, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT nombre FROM tipo_problema where id_tipo_problema = '{id}' '''
+        con.execute(sql)
+        registro = con.fetchall()
         return registro[0][0]
 
 # ========================================================================================================================
@@ -240,7 +252,6 @@ class Articulo:
 
     def insertar(self, nombre):
         con = self.conexion.cursor()
-        # LOS NOMBRES DE COLUMNAS TAL CUAL COMO ESTAN EN LA BASE
         sql = f'''INSERT INTO articulo (nombre)
         VALUES('{nombre}')'''
         con.execute(sql)
@@ -262,3 +273,30 @@ class Articulo:
         con.execute(sql)
         self.conexion.commit()
         con.close()
+
+
+class Estado:
+    def __init__(self):
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
+
+    def obtener_nombre(self, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT nombre FROM estado where id_estado = {id} '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+# =========================================================================================================================
+
+class Prioridad:
+    def __init__(self):
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
+
+    def obtener_nombre(self, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT nombre FROM prioridad where id_prioridad = {id} '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+# =========================================================================================================================

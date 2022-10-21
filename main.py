@@ -796,8 +796,19 @@ class WidgetsMostrarTickets:
         self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
         self.ticket = Ticket()
-        for i in self.ticket.mostrar_resumido():
-            self.treeview.insert('', 'end', values=i)
+        self.usuario = Usuario()
+        self.area = Area()
+        self.estado = Estado()
+        self.prioridad = Prioridad()
+
+        self.lista_datos = self.ticket.mostrar_resumido()
+        for i in self.lista_datos:
+            l = list(i)
+            l[1] = self.usuario.obtener_campo('nombre_usuario', l[1])
+            l[2] = self.area.obtener_nombre(l[2])
+            l[3] = self.estado.obtener_nombre(l[3])
+            l[4] = self.prioridad.obtener_nombre(l[4])
+            self.treeview.insert('', 'end', values=l)
 
         notebook_contenido.add(self.frame, text='Mostrar Tickets')
 
@@ -993,7 +1004,6 @@ widgets_crear_ticket = WidgetsCrearTicket()
 widgets_mostrar_tickets = WidgetsMostrarTickets()
 widgets_crear_pedido = WidgetsCrearPedido()
 widgets_usuarios = WidgetsUsuarios()
-print(lista_areas)
 
 ventana.mainloop()
 
