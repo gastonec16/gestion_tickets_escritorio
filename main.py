@@ -2,6 +2,7 @@ from os import path
 from tkinter import PhotoImage, IntVar, StringVar, Tk, Text, Toplevel, messagebox as mb
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Notebook, Scrollbar, Spinbox, Style, Treeview, Checkbutton
 from tkinter.font import Font
+from time import strftime
 from clases import *
 
 
@@ -115,10 +116,10 @@ def modificar_usuario():
             actualizar_treeview(usuario, widgets_usuarios.treeview)
             ventana_emergente.top.destroy()
 
-def modificar_ticket():
-    global ventana_emergente
-    # id_usuario = id_mod_usuario.get()
-    # nombre = nombre_mod_usuario.get()
+# def modificar_ticket():
+#     global ventana_emergente
+#     # id_usuario = id_mod_usuario.get()
+#     # nombre = nombre_mod_usuario.get()
     # apellido = apellido_mod_usuario.get()
     # legajo = legajo_mod_usuario.get()
     # email = email_mod_usuario.get()
@@ -129,6 +130,45 @@ def modificar_ticket():
     # actualizar_treeview(usuario, widgets_usuarios.treeview)
     # ventana_emergente.top.destroy()
 
+#====================================================================================================================
+def crear_ticket():    
+    id_usuario = 5                                 #ticket
+    asunto = asunto_ticket.get()
+    area = area_ticket.get()
+    codigo_hardware = codigo_hardware_ticket.get()
+    descripcion = descripcion_ticket.get()
+    fecha_inicio = strftime('%Y/%m/%d')
+    hora_inicio = strftime('%H:%M')
+    id_tipo_problema = 1
+    ticket = Ticket()
+    ticket.insertar(id_usuario, asunto, area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
+    vaciar_entry(widgets_registrarse.lista_entry)
+    actualizar_treeview(ticket, widgets_mostrar_tickets.treeview)
+    
+
+
+def modificar_ticket():
+    asunto = asunto_mod_ticket.get()
+    area = area_mod_ticket.get()
+    prioridad = prioridad_mod_ticket.get()
+    codigo_hardware = codigo_hardware_mod_ticket.get()
+    tecnico = tecnico_mod_ticket.get()
+    descripcion = descripcion_mod_ticket.get()
+    ticket = Ticket()
+    ticket.modificar(asunto, area, prioridad, codigo_hardware, tecnico, descripcion)
+    vaciar_entry(widgets_registrarse.lista_entry)
+    actualizar_treeview(ticket, widgets_mostrar_tickets.treeview)
+
+
+def eliminar_ticket():
+    mensaje = mb.askyesno("eliminar ticket", "¿seguro desea eliminar el ticket?")
+    if mensaje == True:
+        id_ticket = id_ticket.get()
+        ticket = Ticket()
+        ticket.eliminar(id_ticket)
+        vaciar_entry(widgets_mostrar_tickets.lista_entry)
+        actualizar_treeview(Ticket, widgets_mostrar_tickets.treeview)
+#===============================================================================================================
 # =========================================================================================
 
 
@@ -166,10 +206,6 @@ def eliminar_area():
         area.eliminar(id_area)
         vaciar_entry(widgets_areas.lista_entry_mod)
         actualizar_treeview(area, widgets_areas.treeview)
-
-
-def crear_ticket():
-    print('crear ticket')
 
 def iniciar_sesion():
     global usuario_actual
@@ -312,6 +348,23 @@ activo_mod_usuario = IntVar()
 # ==========================================
 nombre_usuario_iniciar = StringVar()
 contraseña_iniciar = StringVar()
+# ==========================================
+
+asunto_ticket = StringVar()                                    #string var de tickets
+area_ticket = IntVar()
+prioridad_ticket = StringVar()
+codigo_hardware_ticket = StringVar()
+descripcion_ticket = StringVar()
+
+
+asunto_mod_ticket = StringVar()
+area_mod_ticket = StringVar()
+prioridad_mod_ticket = StringVar()
+codigo_hardware_mod_ticket = StringVar()
+tecnico_mod_ticket =StringVar()
+descripcion_mod_ticket = StringVar()
+
+#====================================
 # endregion
 
 # region widgets
