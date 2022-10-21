@@ -23,20 +23,6 @@ def posicionar_formulario(lista_label, lista_entry, button=None, column=0, row=1
                     pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
 
-def text_con_scrollbar(frame):
-
-    frame_text = Frame(frame)
-    frame_text.columnconfigure(0, weight=1)
-
-    text = Text(frame_text, height=7, width=0, font=fuente_label)
-    scrollbar = Scrollbar(frame_text, command=text.yview)
-    text.config(yscrollcommand=scrollbar.set)
-    text.grid(column=0, row=0, sticky='nsew')
-    scrollbar.grid(row=0, column=1, sticky='ns')
-
-    return frame_text
-
-
 def vaciar_entry(lista_entry):
     for i in lista_entry:
         i.delete(0, 'end')
@@ -135,13 +121,15 @@ def crear_ticket():
     id_usuario = 5                                 #ticket
     asunto = asunto_ticket.get()
     area = area_ticket.get()
+    print(area)
     codigo_hardware = codigo_hardware_ticket.get()
-    descripcion = descripcion_ticket.get()
+    descripcion = widgets_crear_ticket.text.get('1', 'end')
+    print(descripcion)
     fecha_inicio = strftime('%Y/%m/%d')
     hora_inicio = strftime('%H:%M')
     id_tipo_problema = 1
     ticket = Ticket()
-    ticket.insertar(id_usuario, asunto, area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
+    ticket.insertar(id_usuario, asunto, 2, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
     vaciar_entry(widgets_registrarse.lista_entry)
     actualizar_treeview(ticket, widgets_mostrar_tickets.treeview)
     
@@ -181,6 +169,7 @@ def agregar_area():
         area.insertar(nombre, email, telefono)
         vaciar_entry(widgets_areas.lista_entry)
         actualizar_treeview(area, widgets_areas.treeview)
+        actualizar_listas()
 
 
 def modificar_area():
@@ -230,8 +219,24 @@ def agregar_detalle_pedido():
     print('agregar detalle pedido')
 
 
-lista_areas = ['Palacio', 'Administracion',
-               'Computos', 'Modernizacion', 'Cultura', 'Turismo']
+lista_areas = []
+lista_tipos_problema = []
+
+def actualizar_listas():
+    global lista_areas
+    global lista_tipos_problema
+
+    lista_areas = []
+    area = Area()
+    areas = area.mostrar()
+    for i in areas:
+        lista_areas.append(i[1])
+
+    lista_tipos_problema = []
+    tipo_problema = TipoProblema()
+    tipos_problema = tipo_problema.mostrar()
+    for i in tipos_problema:
+        lista_tipos_problema.append(i[1])
 
 lista_prioridades = ['Baja', 'Media', 'Alta']
 
@@ -353,6 +358,7 @@ contraseña_iniciar = StringVar()
 asunto_ticket = StringVar()                                    #string var de tickets
 area_ticket = IntVar()
 prioridad_ticket = StringVar()
+tipo_problema_ticket = IntVar()
 codigo_hardware_ticket = StringVar()
 descripcion_ticket = StringVar()
 
@@ -686,19 +692,28 @@ class WidgetsCrearTicket:
         self.lista_label = [
             Label(self.frame, text='Asunto *'),
             Label(self.frame, text='Área *'),
-            Label(self.frame, text='Prioridad *'),
             Label(self.frame, text='Código Hardware  '),
-            Label(self.frame, text='Técnico  '),
+            Label(self.frame, text='Tipo de Problema *'),
             Label(self.frame, text='Detalle *')
         ]
 
+        self.frame_text = Frame(self.frame)
+        self.frame_text.columnconfigure(0, weight=1)
+
+        self.text = Text(self.frame_text, height=7, width=0, font=fuente_label)
+        self.scrollbar = Scrollbar(self.frame_text, command=self.text.yview)
+        self.text.config(yscrollcommand=self.scrollbar.set)
+        self.text.grid(column=0, row=0, sticky='nsew')
+        self.scrollbar.grid(row=0, column=1, sticky='ns')
+
+        
+
         self.lista_entry = [
-            Entry(self.frame),
-            Combobox(self.frame, values=lista_areas, state='readonly'),
-            Combobox(self.frame, values=lista_prioridades, state='readonly'),
-            Entry(self.frame),
-            Combobox(self.frame, values=lista_tecnicos, state='readonly'),
-            text_con_scrollbar(self.frame)
+            Entry(self.frame, textvariable=asunto_ticket),
+            Combobox(self.frame, values=lista_areas, textvariable=area_ticket, state='readonly'),
+            Entry(self.frame, textvariable=codigo_hardware_ticket),
+            Combobox(self.frame, values=lista_tipos_problema, textvariable=tipo_problema_ticket, state='readonly'),
+            self.frame_text
         ]
 
         self.button_crear = Button(
@@ -856,11 +871,21 @@ class WidgetsCrearPedido():
         self.frame_descripcion = Frame(self.frame)
         self.frame_descripcion.columnconfigure(0, weight=1)
 
+        self.frame_text = Frame(self.frame)
+        self.frame_text.columnconfigure(0, weight=1)
+
+        self.text = Text(self.frame_text, height=7, width=0, font=fuente_label)
+        scrollbar = Scrollbar(self.frame_text, command=self.text.yview)
+        self.text.config(yscrollcommand=scrollbar.set)
+        self.text.grid(column=0, row=0, sticky='nsew')
+        scrollbar.grid(row=0, column=1, sticky='ns')
+
+
         self.lista_entry = [
             Combobox(self.frame, values=lista_articulos, state='readonly'),
             Entry(self.frame),
             Spinbox(self.frame, from_=1, to=9999),
-            text_con_scrollbar(self.frame)
+            self.frame_text
         ]
 
         self.button_agregar_detalle = Button(
@@ -950,8 +975,11 @@ class UsuarioActual:
         self.nombre_usuario = nombre_usuario
         self.contraseña = contraseña
 
+
+
 # endregion
 
+actualizar_listas()
 ventana_emergente = None
 widgets_iniciar_sesion = WidgetsIniciarSesion()
 widgets_registrarse = WidgetsRegistrarse()
@@ -960,5 +988,6 @@ widgets_crear_ticket = WidgetsCrearTicket()
 widgets_mostrar_tickets = WidgetsMostrarTickets()
 widgets_crear_pedido = WidgetsCrearPedido()
 widgets_usuarios = WidgetsUsuarios()
+print(lista_areas)
 
 ventana.mainloop()
