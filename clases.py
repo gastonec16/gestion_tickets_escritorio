@@ -16,7 +16,7 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='usuario creado',
+        mb.showinfo(title='Usuario Creado',
                     message='Se ha agregado un nuevo usuario con éxito')
 
     def mostrar(self):
@@ -24,17 +24,18 @@ class Usuario:
         sql = 'SELECT * FROM usuario'
         con.execute(sql)
         registro = con.fetchall()
-        return registro
+        return reversed(registro)
 
-    def modificar(self, id_usuario, nombre, apellido, legajo, email, activo):
+    def modificar(self, id_usuario, id_tipo_usuario, nombre, apellido, email, legajo, activo):
         con = self.conexion.cursor()
         sql = f'''UPDATE usuario SET nombre = '{nombre}', apellido = '{apellido}', 
-        legajo = '{legajo}', email = '{email}', activo= '{activo}'
+        legajo = '{legajo}', email = '{email}', activo= '{activo}', id_tipo_usuario = {id_tipo_usuario}
         WHERE id_usuario ={id_usuario}'''
+        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='usuario modificado',
+        mb.showinfo(title='Usuario Modificado',
                     message=f'Se ha modificado el usuario {nombre} {apellido} con éxito')
 
     def modificar_contraseña(self, id_usuario, contraseña):
@@ -44,17 +45,21 @@ class Usuario:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='contraseña modificada',
+        mb.showinfo(title='Contraseña Modificada',
                     message=f'Se ha modificado la contraseña con éxito')
 
     def eliminar(self, id_usuario):
-        con = self.conexion.cursor()
-        sql = f'''DELETE FROM usuario where id_usuario = {id_usuario}'''
-        con.execute(sql)
-        self.conexion.commit()
-        con.close()
-        mb.showinfo(title='usuario eliminado',
-                    message='Se ha eliminado el usuario con éxito')
+        try:
+            con = self.conexion.cursor()
+            sql = f'''DELETE FROM usuario where id_usuario = {id_usuario}'''
+            con.execute(sql)
+            self.conexion.commit()
+            con.close()
+            mb.showinfo(title='Usuario Eliminado',
+                        message='Se ha eliminado el usuario con éxito')
+        except:
+            mb.showerror(title='ERROR',
+                        message=f'No se pudo eliminar el usuario')
 
     def lista_usuarios(self):
         con = self.conexion.cursor()
@@ -83,6 +88,13 @@ class Usuario:
         registro = con.fetchall()
         return registro[0][0]
 
+    def mostrar_datos(self, nombre_usuario):
+        con = self.conexion.cursor()
+        sql = f'''SELECT * FROM usuario where nombre_usuario = '{nombre_usuario}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0]
+
 #===========================================================================================================================
 
 class Ticket:
@@ -97,7 +109,7 @@ class Ticket:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="ticket creado",
+        mb.showinfo(title="Ticket Creado",
                     message="Se ha creado un nuevo ticket con éxito")
 
     def mostrar(self):
@@ -110,10 +122,10 @@ class Ticket:
     def mostrar_resumido(self):
         con = self.conexion.cursor()
         sql = '''SELECT id_ticket, id_usuario, id_area, id_estado,
-                id_prioridad, id_tecnico, asunto, fecha_inicio FROM Ticket'''
+                id_prioridad, id_tecnico, asunto, fecha_inicio, hora_inicio FROM Ticket'''
         con.execute(sql)
         registro = con.fetchall()
-        return registro
+        return reversed(registro)
 
     def modificar(self, id_ticket, asunto, area, prioridad, codigo_hardware, tecnico, descripcion):
         con = self.conexion.cursor()
@@ -122,7 +134,7 @@ class Ticket:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="ticket modificado",
+        mb.showinfo(title="Ticket Modificado",
                     message=f"Se ha modificado el ticket {asunto} con éxito")
 
     def archivar(self, id_ticket):
@@ -131,7 +143,7 @@ class Ticket:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="ticket archivado",
+        mb.showinfo(title="Ticket Archivado",
                     message=f"Se ha archivado el ticket {id_ticket}")
 # =========================================================================================================================
 
@@ -147,8 +159,8 @@ class Area:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='area agregada',
-                    message='Se ha agregado una nueva area con éxito')
+        mb.showinfo(title='Área Agregada',
+                    message='Se ha agregado una nueva área con éxito')
 
     def mostrar(self):
         con = self.conexion.cursor()
@@ -163,8 +175,8 @@ class Area:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='area modificada',
-                    message=f'Se ha modificado el area {nombre} con éxito')
+        mb.showinfo(title='Área Modificada',
+                    message=f'Se ha modificado el área {nombre} con éxito')
 
     def obtener_id(self, nombre):
         con = self.conexion.cursor()
@@ -174,13 +186,17 @@ class Area:
         return registro[0][0]
 
     def eliminar(self, id_area):
-        con = self.conexion.cursor()
-        sql = f'''DELETE FROM area where id_area = {id_area}'''
-        con.execute(sql)
-        self.conexion.commit()
-        con.close()
-        mb.showinfo(title='area eliminada',
-                    message='Se ha eliminado el area con éxito')
+        try:
+            con = self.conexion.cursor()
+            sql = f'''DELETE FROM area where id_area = {id_area}'''
+            con.execute(sql)
+            self.conexion.commit()
+            con.close()
+            mb.showinfo(title='Área Eliminada',
+                        message='Se ha eliminado el área con éxito')
+        except:
+            mb.showerror(title='ERROR',
+                        message=f'No se pudo eliminar el área')
 
     def lista_areas(self):
         con = self.conexion.cursor()
@@ -194,7 +210,6 @@ class Area:
         sql = f'''SELECT nombre FROM area where id_area = {id} '''
         con.execute(sql)
         registro = con.fetchall()
-        print(registro)
         return registro[0][0]
 # =========================================================================================================================
 
@@ -211,8 +226,8 @@ class TipoProblema:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='tipo de problema',
-                    message='Se ha agregado uno nuevo tipo de problema')
+        mb.showinfo(title='Tipo de Problema Agregado',
+                    message='Se ha agregado un nuevo tipo de problema')
 
     def mostrar(self):
         con = self.conexion.cursor()
@@ -221,12 +236,28 @@ class TipoProblema:
         registro = con.fetchall()
         return registro
 
-    def eliminar_tipo_problema(self, id_tipo_problema):
+    def eliminar(self, id_tipo_problema):
+        try:
+            con = self.conexion.cursor()
+            sql = f'''DELETE FROM tipo_problema where id_tipo_problema = {id_tipo_problema}'''
+            con.execute(sql)
+            self.conexion.commit()
+            con.close()
+            mb.showinfo(title='Tipo de Problema Eliminado',
+                        message=f'Se ha eliminado el tipo de problema')
+        except:
+            mb.showerror(title='ERROR',
+                        message=f'No se pudo eliminar el tipo de problema')
+
+    def modificar(self, id_tipo_problema, nombre):
         con = self.conexion.cursor()
-        sql = f'''DELETE FROM tipo_problema where id_tipo_problema = {id_tipo_problema}'''
+        sql = f'''UPDATE tipo_problema SET nombre='{nombre}' WHERE id_tipo_problema ={id_tipo_problema}'''
+        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
+        mb.showinfo(title='Tipo de Problema Modificado',
+                    message=f'Se ha modificado el tipo de problema {nombre} con éxito')
 
     def obtener_id(self, nombre):
         con = self.conexion.cursor()
@@ -241,6 +272,13 @@ class TipoProblema:
         con.execute(sql)
         registro = con.fetchall()
         return registro[0][0]
+
+    def lista_tipos_problema(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT nombre FROM tipo_problema'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
 
 # ========================================================================================================================
 
@@ -257,8 +295,8 @@ class Articulo:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title='articulo',
-                    message='Se ha agregado un nuevo articulo')
+        mb.showinfo(title='Artículo Agregado',
+                    message='Se ha agregado un nuevo artículo')
 
     def mostrar(self):
         con = self.conexion.cursor()
@@ -268,12 +306,42 @@ class Articulo:
         return registro
 
     def eliminar_articulo(self, id_articulo):
-        con = self.conexion.cursor()
-        sql = f'''DELETE FROM articulo where id_articulo = {id_articulo}'''
-        con.execute(sql)
-        self.conexion.commit()
-        con.close()
+        try:
+            con = self.conexion.cursor()
+            sql = f'''DELETE FROM articulo where id_articulo = {id_articulo}'''
+            con.execute(sql)
+            self.conexion.commit()
+            con.close()
+        except:
+            mb.showerror(title='ERROR',
+                        message=f'No se pudo eliminar el artículo')
 
+class TipoUsuario:
+    def __init__(self):
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
+
+    def mostrar(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT * FROM tipo_usuario'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def obtener_id(self, nombre):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_tipo_usuario FROM tipo_usuario where nombre = '{nombre}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+
+    def obtener_nombre(self, id):
+        con = self.conexion.cursor()
+        sql = f'''SELECT nombre FROM tipo_usuario where id_tipo_usuario = {id} '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+# =========================================================================================================================
 
 class Estado:
     def __init__(self):
