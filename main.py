@@ -85,8 +85,7 @@ def registrar_usuario():
     if validar_obligatorios((nombre, apellido, legajo, email, nombre_usuarioo, contraseña)):
         usuario.insertar(nombre, apellido, legajo, email, nombre_usuarioo, contraseña)
         vaciar_entry(widgets_registrarse.lista_entry)
-        actualizar_treeview(usuario, widgets_usuarios.treeview)
-        mb.showinfo('Usuario Registrado', 'Ahora puede Iniciar Sesión')
+        widgets_usuarios.actualizar_treeview()
 
 
 def modificar_usuario():

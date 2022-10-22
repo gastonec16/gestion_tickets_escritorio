@@ -17,7 +17,7 @@ class Usuario:
         self.conexion.commit()
         con.close()
         mb.showinfo(title='Usuario Creado',
-                    message='Se ha agregado un nuevo usuario con éxito')
+                    message='Se ha registrado su usuario con éxito.\nAhora puede iniciar sesión')
 
     def mostrar(self):
         con = self.conexion.cursor()
