@@ -31,7 +31,6 @@ class Usuario:
         sql = f'''UPDATE usuario SET nombre = '{nombre}', apellido = '{apellido}', 
         legajo = '{legajo}', email = '{email}', activo= '{activo}', id_tipo_usuario = {id_tipo_usuario}
         WHERE id_usuario ={id_usuario}'''
-        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
@@ -86,7 +85,10 @@ class Usuario:
         sql = f'''SELECT {campo} FROM usuario where id_usuario = '{id}' '''
         con.execute(sql)
         registro = con.fetchall()
-        return registro[0][0]
+        try:
+            return registro[0][0]
+        except:
+            return ''
 
     def mostrar_datos(self, nombre_usuario):
         con = self.conexion.cursor()
@@ -95,12 +97,26 @@ class Usuario:
         registro = con.fetchall()
         return registro[0]
 
+    def mostrar_lista_tecnicos(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT nombre_usuario FROM usuario where id_tipo_usuario = 2'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def obtener_id(self, nombre_usuario):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_usuario FROM Usuario where nombre_usuario = '{nombre_usuario}' '''
+        con.execute(sql)
+        registro = con.fetchall()[0][0]
+        return registro
+
 #===========================================================================================================================
 
 class Ticket:
     def __init__(self,):
-        self.conexion = mariadb.connect(host="localhost", user="root",
-                                        passwd=password, database="Tickets")
+        self.conexion = mariadb.connect(host='localhost', user='root',
+                                        passwd=password, database='Tickets')
 
     def insertar(self, id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema):
         con = self.conexion.cursor()
@@ -109,12 +125,12 @@ class Ticket:
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="Ticket Creado",
-                    message="Se ha creado un nuevo ticket con éxito")
+        mb.showinfo(title='Ticket Creado',
+                    message='Se ha creado un nuevo ticket con éxito')
 
     def mostrar(self):
         con = self.conexion.cursor()
-        sql = "SELECT * FROM Ticket"
+        sql = 'SELECT * FROM Ticket'
         con.execute(sql)
         registro = con.fetchall()
         return registro
@@ -127,24 +143,37 @@ class Ticket:
         registro = con.fetchall()
         return reversed(registro)
 
-    def modificar(self, id_ticket, asunto, area, prioridad, codigo_hardware, tecnico, descripcion):
+    def modificar(self, id_ticket, id_area, id_prioridad, id_estado, id_tecnico, codigo_hardware):
         con = self.conexion.cursor()
-        sql = f'''UPDATE ticket SET asunto = {asunto}', id_area ='{area}', id_prioridad ='{prioridad}',
-         codigo_hardware ='{codigo_hardware}', tecnico ='{tecnico}', descripcion = '{descripcion}' WHERE id_ticket ={id_ticket}'''
+        sql = ''
+        if id_tecnico != '':
+            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado},
+                    id_tecnico={id_tecnico}, codigo_hardware='{codigo_hardware}' WHERE id_ticket={id_ticket}'''
+        else:
+            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado},
+                    codigo_hardware='{codigo_hardware}' WHERE id_ticket={id_ticket}'''
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="Ticket Modificado",
-                    message=f"Se ha modificado el ticket {asunto} con éxito")
+        mb.showinfo(title='Ticket Modificado',
+                    message=f'Se ha modificado el ticket Nº {id_ticket} con éxito')
 
-    def archivar(self, id_ticket):
+    def archivar(self, id_ticket, fecha_cierre, hora_cierre):
         con = self.conexion.cursor()
-        sql = f'''UPDATE Ticket SET id_estado = 4 where id_ticket = {id_ticket}'''
+        sql = f'''UPDATE Ticket SET id_estado=5, fecha_cierre='{fecha_cierre}', hora_cierre='{hora_cierre}'
+                where id_ticket = {id_ticket}'''
         con.execute(sql)
         self.conexion.commit()
         con.close()
-        mb.showinfo(title="Ticket Archivado",
-                    message=f"Se ha archivado el ticket {id_ticket}")
+        mb.showinfo(title='Ticket Archivado',
+                    message=f'Se ha archivado el ticket {id_ticket}')
+
+    def obtener_datos(self, id_ticket):
+        con = self.conexion.cursor()
+        sql = f'SELECT * FROM Ticket where id_ticket = {id_ticket}'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0]
 # =========================================================================================================================
 
 class Area:
@@ -252,7 +281,6 @@ class TipoProblema:
     def modificar(self, id_tipo_problema, nombre):
         con = self.conexion.cursor()
         sql = f'''UPDATE tipo_problema SET nombre='{nombre}' WHERE id_tipo_problema ={id_tipo_problema}'''
-        print(sql)
         con.execute(sql)
         self.conexion.commit()
         con.close()
@@ -354,6 +382,20 @@ class Estado:
         con.execute(sql)
         registro = con.fetchall()
         return registro[0][0]
+
+    def mostrar(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT * FROM Estado'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def obtener_id(self, nombre):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_estado FROM estado where nombre = '{nombre}' '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
 # =========================================================================================================================
 
 class Prioridad:
@@ -364,6 +406,20 @@ class Prioridad:
     def obtener_nombre(self, id):
         con = self.conexion.cursor()
         sql = f'''SELECT nombre FROM prioridad where id_prioridad = {id} '''
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro[0][0]
+
+    def mostrar(self):
+        con = self.conexion.cursor()
+        sql = 'SELECT * FROM Prioridad'
+        con.execute(sql)
+        registro = con.fetchall()
+        return registro
+
+    def obtener_id(self, nombre):
+        con = self.conexion.cursor()
+        sql = f'''SELECT id_prioridad FROM prioridad where nombre = '{nombre}' '''
         con.execute(sql)
         registro = con.fetchall()
         return registro[0][0]

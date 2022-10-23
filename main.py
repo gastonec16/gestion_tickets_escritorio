@@ -19,8 +19,7 @@ def posicionar_formulario(lista_label, lista_entry, button=None, column=0, row=1
                padx=(8, 24), ipady=3, sticky='ew')
         row_entry += 1
     if button != None:
-        button.grid(column=column+1, row=row_entry, padx=24,
-                    pady=(12, 8), ipadx=16, ipady=6, sticky='e')
+        button.grid(column=column+1, row=row_entry, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
 def vaciar_entry(lista_entry):
     for i in lista_entry:
@@ -50,13 +49,6 @@ def mostrar_usuario():
         ventana_emergente.top.destroy()
     ventana_emergente = VentanaEmergente()
     WidgetsModificarUsuario(ventana_emergente.top)
-
-def mostrar_ticket():
-    global ventana_emergente
-    if ventana_emergente != None:
-        ventana_emergente.top.destroy()
-    ventana_emergente = VentanaEmergente()
-    WidgetsModificarTicket(ventana_emergente.top)
 
 def registrar_usuario():
     nombre = nombre_usuario.get().strip()
@@ -109,25 +101,11 @@ def modificar_usuario():
             actualizar_treeview(usuario, widgets_usuarios.treeview)
             ventana_emergente.top.destroy()
 
-# def modificar_ticket():
-#     global ventana_emergente
-#     # id_usuario = id_mod_usuario.get()
-#     # nombre = nombre_mod_usuario.get()
-    # apellido = apellido_mod_usuario.get()
-    # legajo = legajo_mod_usuario.get()
-    # email = email_mod_usuario.get()
-    # activo = activo_mod_usuario.get()
-    # usuario = Usuario()
-    # usuario.modificar(id_usuario, nombre, apellido, legajo, email, activo)
-    # vaciar_entry(widgets_registrarse.lista_entry)
-    # actualizar_treeview(usuario, widgets_usuarios.treeview)
-    # ventana_emergente.top.destroy()
-
 #====================================================================================================================
 def crear_ticket():    
     area = Area()
     tipo_problema = TipoProblema()
-    id_usuario = 5                                 #ticket
+    id_usuario = usuario_actual.id_usuario                                 #ticket
     asunto = asunto_ticket.get()
     id_area = area_ticket.get()
     id_tipo_problema = tipo_problema_ticket.get()
@@ -140,20 +118,74 @@ def crear_ticket():
         hora_inicio = strftime('%H:%M:%S')
         ticket = Ticket()
         ticket.insertar(id_usuario, asunto, id_area, codigo_hardware, descripcion, fecha_inicio, hora_inicio, id_tipo_problema)
-        vaciar_entry(widgets_registrarse.lista_entry)
+        vaciar_entry(widgets_crear_ticket.lista_entry[0:2])
+        vaciar_entry(widgets_crear_ticket.lista_entry[3:4])
+        widgets_crear_ticket.lista_entry[1].set('')
+        widgets_crear_ticket.lista_entry[2].set('')
+        widgets_crear_ticket.text.delete('1.0', 'end')
         widgets_mostrar_tickets.actualizar_treeview()
 
-def modificar_ticket():
-    asunto = asunto_mod_ticket.get()
-    area = area_mod_ticket.get()
-    prioridad = prioridad_mod_ticket.get()
-    codigo_hardware = codigo_hardware_mod_ticket.get()
-    tecnico = tecnico_mod_ticket.get()
-    descripcion = descripcion_mod_ticket.get()
+
+def mostrar_ticket():
+    global ventana_emergente
+    if ventana_emergente != None:
+        ventana_emergente.top.destroy()
+        
     ticket = Ticket()
-    ticket.modificar(asunto, area, prioridad, codigo_hardware, tecnico, descripcion)
-    vaciar_entry(widgets_registrarse.lista_entry)
-    actualizar_treeview(ticket, widgets_mostrar_tickets.treeview)
+
+    id_ticket = id_mod_ticket.get()
+    datos = ticket.obtener_datos(id_ticket)
+    lista_datos = [id_mod_ticket, usuario_mod_ticket, area_mod_ticket, estado_mod_ticket, prioridad_mod_ticket, tecnico_mod_ticket, 
+                   tipo_problema_mod_ticket, asunto_mod_ticket, fecha_inicio_mod_ticket, fecha_cierre_mod_ticket,
+                   descripcion_mod_ticket, codigo_hardware_mod_ticket, hora_inicio_mod_ticket, hora_cierre_mod_ticket]
+
+    for i in range(len(datos)):
+        lista_datos[i].set(datos[i])
+
+    estado = Estado()
+    usuario = Usuario()
+    area = Area()
+    prioridad = Prioridad()
+    tipo_problema = TipoProblema()
+
+    estado_mod_ticket.set(estado.obtener_nombre(estado_mod_ticket.get()))
+    usuario_mod_ticket.set(usuario.obtener_campo('nombre_usuario', usuario_mod_ticket.get()))
+    area_mod_ticket.set(area.obtener_nombre(area_mod_ticket.get()))
+    prioridad_mod_ticket.set(prioridad.obtener_nombre(prioridad_mod_ticket.get()))
+    tipo_problema_mod_ticket.set(tipo_problema.obtener_nombre(tipo_problema_mod_ticket.get()))
+    tecnico_mod_ticket.set(usuario.obtener_campo('nombre_usuario', tecnico_mod_ticket.get()))
+    
+
+    ventana_emergente = VentanaEmergente()
+    WidgetsModificarTicket(ventana_emergente.top)
+
+
+def modificar_ticket():
+    mensaje = mb.askyesno('Modificar Ticket', '¿Seguro desea modificar el ticket?')
+    if mensaje == True:
+        id_ticket = id_mod_ticket.get()
+        id_area = area_mod_ticket.get()
+        id_prioridad = prioridad_mod_ticket.get()
+        id_estado = estado_mod_ticket.get()
+        codigo_hardware = codigo_hardware_mod_ticket.get()
+        id_tecnico = tecnico_mod_ticket.get()
+        if validar_obligatorios((id_area, id_prioridad, id_estado, codigo_hardware)):
+            ticket = Ticket()
+            area = Area()
+            prioridad = Prioridad()
+            estado = Estado()
+            usuario = Usuario()
+            id_area = area.obtener_id(area_mod_ticket.get())
+            id_prioridad = prioridad.obtener_id(prioridad_mod_ticket.get())
+            id_estado = estado.obtener_id(estado_mod_ticket.get())
+            if id_tecnico != '':
+                id_tecnico = usuario.obtener_id(tecnico_mod_ticket.get())
+            ticket.modificar(id_ticket, id_area, id_prioridad, id_estado, id_tecnico, codigo_hardware)
+            if id_estado == 5:
+                fecha_cierre = strftime('%Y/%m/%d')
+                hora_cierre = strftime('%H:%M:%S')
+                ticket.archivar(id_ticket, fecha_cierre, hora_cierre)
+            widgets_mostrar_tickets.actualizar_treeview()
 
 def eliminar_ticket():
     mensaje = mb.askyesno("eliminar ticket", "¿seguro desea eliminar el ticket?")
@@ -163,8 +195,8 @@ def eliminar_ticket():
         ticket.eliminar(id_ticket)
         vaciar_entry(widgets_mostrar_tickets.lista_entry)
         actualizar_treeview(Ticket, widgets_mostrar_tickets.treeview)
+
 #===============================================================================================================
-#=========================================================================================
 
 def agregar_area():
     nombre = nombre_area.get().strip()
@@ -272,11 +304,8 @@ def iniciar_sesion():
     usuario_actual = UsuarioActual(datos[0], datos[1], datos[2], datos[3], datos[4],
                                    datos[5], datos[6], datos[7], datos[8])
 
-    
-
 def crear_pedido():
     print('crear pedido')
-
 
 def agregar_detalle_pedido():
     print('agregar detalle pedido')
@@ -285,6 +314,9 @@ def actualizar_listas():
     global lista_areas
     global lista_tipos_problema
     global lista_tipos_usuario
+    global lista_tecnicos
+    global lista_prioridades
+    global lista_estados
 
     area = Area()
     areas = area.mostrar()
@@ -292,6 +324,13 @@ def actualizar_listas():
     lista_areas = []
     for i in areas:
         lista_areas.append(i[1])
+
+    estado = Estado()
+    estados = estado.mostrar()
+
+    lista_estados = []
+    for i in estados:
+        lista_estados.append(i[1])
 
     tipo_problema = TipoProblema()
     tipos_problema = tipo_problema.mostrar()
@@ -307,20 +346,27 @@ def actualizar_listas():
     for i in tipos_usuario:
         lista_tipos_usuario.append(i[1])
 
+    usuario = Usuario()
+    tecnicos = usuario.mostrar_lista_tecnicos()
+
+    lista_tecnicos = []
+    for i in tecnicos:
+        lista_tecnicos.append(i[0])
+
+    prioridad = Prioridad()
+    prioridades = prioridad.mostrar()
+
+    lista_prioridades = []
+    for i in prioridades:
+        lista_prioridades.append(i[1])
+
+    
+
 def actualizar_comboboxes():
     actualizar_listas()
 
     widgets_crear_ticket.lista_entry[1].config(values=lista_areas)
-    widgets_crear_ticket.lista_entry[3].config(values=lista_tipos_problema)
-
-
-lista_prioridades = ['Baja', 'Media', 'Alta']
-
-lista_tecnicos = ['Oscar', 'Camilo', 'Agustin']
-
-lista_articulos = ['Mouse', 'Teclado', 'Monitor', 'Disco Duro', 'SSD']
-
-lista_estados = []
+    widgets_crear_ticket.lista_entry[2].config(values=lista_tipos_problema)
 
 # endregion
 
@@ -359,36 +405,25 @@ ventana.option_add('*TCombobox*Listbox*Font', fuente_label)
 estilo.configure('TEntry', foreground=colores[4])
 ventana.option_add('*TEntry*Font', fuente_label)
 estilo.configure('TFrame', background=colores[0])
-estilo.configure(
-    'TLabel', background=colores[0], foreground=colores[5], font=fuente_label)
-estilo.configure(
-    'titulo.TLabel', background=colores[0], foreground=colores[6], font=fuente_titulo, justify='center')
-estilo.configure(
-    'subtitulo.TLabel', background=colores[0], foreground=colores[5], font=fuente_subtitulo, justify='center')
-estilo.configure(
-    'pie.TLabel', background=colores[0], foreground=colores[3], font=fuente_pie)
-estilo.configure(
-    'TButton', background=colores[2], foreground=colores[5], focuscolor='none', font=fuente_button)
+estilo.configure('TLabel', background=colores[0], foreground=colores[5], font=fuente_label)
+estilo.configure('titulo.TLabel', background=colores[0], foreground=colores[6], font=fuente_titulo, justify='center')
+estilo.configure('subtitulo.TLabel', background=colores[0], foreground=colores[5], font=fuente_subtitulo, justify='center')
+estilo.configure('pie.TLabel', background=colores[0], foreground=colores[3], font=fuente_pie)
+estilo.configure('TButton', background=colores[2], foreground=colores[5], focuscolor='none', font=fuente_button)
 estilo.map('TButton', background=[('active', colores[3])])
-estilo.configure('peligro.TButton', background='red',
-                 foreground=colores[5], focuscolor='none', font=fuente_button)
+estilo.configure('peligro.TButton', background='red', foreground=colores[5], focuscolor='none', font=fuente_button)
 estilo.map('peligro.TButton', background=[('active', colores[3])])
 estilo.configure('TNotebook', background=colores[1], borderwidth=0)
-estilo.configure(
-    'TNotebook.Tab', foreground=colores[1], focuscolor='none', font=fuente_button)
+estilo.configure('TNotebook.Tab', foreground=colores[1], focuscolor='none', font=fuente_button)
 estilo.map('TNotebook.Tab', background=[('selected', colores[0]), ('active', colores[5])],
            foreground=[('selected', colores[6])], font=[('selected', fuente_notebook)])
-estilo.configure(
-    'Treeview', background=colores[5], foreground=colores[4], font=fuente_label)
+estilo.configure('Treeview', background=colores[5], foreground=colores[4], font=fuente_label)
 estilo.configure('Treeview.Heading', background=colores[6], font=fuente_button)
 estilo.configure('TScrollbar', arrowsize=15, arrowcolor=colores[0])
-estilo.configure(
-    'TSpinbox', foreground=colores[4], arrowsize=15, arrowcolor=colores[0])
+estilo.configure('TSpinbox', foreground=colores[4], arrowsize=15, arrowcolor=colores[0])
 ventana.option_add('*TSpinbox*Font', fuente_label)
-estilo.configure(
-    'TCheckbutton', background=colores[0], foreground=colores[4], font=fuente_label)
+estilo.configure('TCheckbutton', background=colores[0], foreground=colores[4], font=fuente_label)
 estilo.map('TCheckbutton', background=[('active', colores[0])])
-
 
 notebook_contenido = Notebook(ventana)
 notebook_contenido.grid(column=0, row=0, sticky='nsew')
@@ -439,16 +474,28 @@ tipo_problema_ticket = StringVar()
 codigo_hardware_ticket = StringVar()
 descripcion_ticket = StringVar()
 
+id_mod_ticket = StringVar()
+estado_mod_ticket = StringVar()
 asunto_mod_ticket = StringVar()
 area_mod_ticket = StringVar()
 prioridad_mod_ticket = StringVar()
 codigo_hardware_mod_ticket = StringVar()
-tecnico_mod_ticket =StringVar()
+tecnico_mod_ticket = StringVar()
 descripcion_mod_ticket = StringVar()
+usuario_mod_ticket = StringVar()
+tipo_problema_mod_ticket = StringVar()
+fecha_inicio_mod_ticket = StringVar()
+fecha_cierre_mod_ticket = StringVar()
+hora_inicio_mod_ticket = StringVar()
+hora_cierre_mod_ticket = StringVar()
 
 lista_areas = []
 lista_tipos_problema = []
 lista_tipos_usuario = []
+lista_prioridades = []
+lista_tecnicos = []
+lista_estados = []
+lista_articulos = ['Mouse', 'Teclado', 'Monitor', 'Disco Duro', 'SSD']
 #====================================
 nombre_tipo_problema = StringVar()
 id_mod_tipo_problema = IntVar()
@@ -592,13 +639,16 @@ class WidgetsUsuarios:
         self.button_modificar = Button(self.frame, text='Modificar', command=mostrar_usuario, state='disabled', cursor='hand2')
         self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
-        # crear_treeview(Usuario(), self.treeview)
-
         self.lista_variables_mod = [None, tipo_mod_usuario, nombre_mod_usuario, apellido_mod_usuario, legajo_mod_usuario,
                                     email_mod_usuario, activo_mod_usuario, nombre_usuario_mod_usuario]
 
+
         def item_seleccionado(event):
             self.button_modificar.config(state='normal')
+            global ventana_emergente
+            if ventana_emergente != None:
+                ventana_emergente.top.destroy()
+                
             try:
                 for i in self.treeview.selection():
                     item = self.treeview.item(i)
@@ -609,8 +659,6 @@ class WidgetsUsuarios:
                         self.lista_variables_mod[i].set(record[i])
             except:
                 pass
-
-        
         
         self.treeview.bind('<<TreeviewSelect>>', item_seleccionado)
 
@@ -795,9 +843,9 @@ class WidgetsCrearTicket:
         self.lista_label = [
             Label(self.frame, text='Asunto *'),
             Label(self.frame, text='Área *'),
-            Label(self.frame, text='Código Hardware  '),
             Label(self.frame, text='Tipo de Problema *'),
-            Label(self.frame, text='Detalle *')
+            Label(self.frame, text='Código Hardware  '),
+            Label(self.frame, text='Descripción *')
         ]
 
         self.frame_text = Frame(self.frame)
@@ -812,8 +860,8 @@ class WidgetsCrearTicket:
         self.lista_entry = [
             Entry(self.frame, textvariable=asunto_ticket),
             Combobox(self.frame, values=lista_areas, textvariable=area_ticket, state='readonly'),
-            Entry(self.frame, textvariable=codigo_hardware_ticket),
             Combobox(self.frame, values=lista_tipos_problema, textvariable=tipo_problema_ticket, state='readonly'),
+            Entry(self.frame, textvariable=codigo_hardware_ticket),
             self.frame_text
         ]
 
@@ -865,13 +913,16 @@ class WidgetsMostrarTickets:
         self.treeview.column('fecha_inicio', minwidth=40, width=40)
         self.treeview.column('hora_inicio', minwidth=40, width=40)
 
+        
         def item_seleccionado(event):
             self.button_modificar.config(state='normal')
+            if ventana_emergente != None:
+                ventana_emergente.top.destroy()
             try:
                 for i in self.treeview.selection():
                     item = self.treeview.item(i)
                     record = item['values']
-                    print(', '.join(record))
+                    id_mod_ticket.set(record[0])
             except:
                 pass
 
@@ -884,7 +935,7 @@ class WidgetsMostrarTickets:
         self.treeview.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.grid(row=0, column=1, sticky='ns')
 
-        self.button_modificar = Button(self.frame, text='Modificar', command=mostrar_ticket, state='disabled', cursor='hand2')
+        self.button_modificar = Button(self.frame, text='Mostrar', command=mostrar_ticket, state='disabled', cursor='hand2')
         self.button_modificar.grid(column=0, row=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
         
@@ -904,13 +955,13 @@ class WidgetsMostrarTickets:
             l[2] = self.area.obtener_nombre(l[2])
             l[3] = self.estado.obtener_nombre(l[3])
             l[4] = self.prioridad.obtener_nombre(l[4])
+            l[5] = self.usuario.obtener_campo('nombre_usuario', l[5])
             self.treeview.insert('', 'end', values=l)
 
     def actualizar_treeview(self):
         self.treeview.delete(*self.treeview.get_children())
         actualizar_comboboxes()
         self.crear_treeview()
-
 
 
 class WidgetsModificarTicket:
@@ -920,50 +971,78 @@ class WidgetsModificarTicket:
         self.frame.grid(column=0, row=0, sticky='nsew')
         self.frame.columnconfigure(1, weight=2)
         self.frame.columnconfigure((1,3,5), weight=1)
-        self.frame.rowconfigure((1,2,3,4,5,6,7,8,9,10,11,12), weight=1)
+        self.frame.rowconfigure((1,2,3,4,5), weight=1)
 
         self.label_titulo = Label(self.frame, style='titulo.TLabel', text='Modificar Ticket')
         self.label_titulo.grid(column=0, row=0, columnspan=6)
 
-        self.label_asunto = Label(self.frame, style='subtitulo.TLabel', text='No me funciona el monitor ahhh')
-        self.label_asunto.grid(column=0, row=1, columnspan=4, padx=24)
+        self.entry_asunto = Entry(self.frame, style='subtitulo.TEntry', textvariable=asunto_mod_ticket, state='readonly')
+        self.entry_asunto.grid(column=0, row=1, columnspan=4, padx=24, ipady=3, sticky='ew')
 
-        self.label_fecha = Label(self.frame, text='22/07/2022 10:35')
-        self.label_fecha.grid(column=4, row=1, padx=(24,8))
+        self.entry_hora = Entry(self.frame, textvariable=hora_inicio_mod_ticket, width=0, state='readonly')
+        self.entry_hora.grid(column=4, row=1, padx=(24,8), ipady=3, sticky='ew')
 
-        self.combobox_estado = Combobox(self.frame, state='readonly')
-        self.combobox_estado.grid(column=5, row=1, padx=(8,24), ipady=3, sticky='ew')
+        self.entry_fecha = Entry(self.frame, textvariable=fecha_inicio_mod_ticket, width=0, state='readonly')
+        self.entry_fecha.grid(column=5, row=1, padx=(24,8), ipady=3, sticky='ew')
+
+        if fecha_cierre_mod_ticket.get() != 'None':
+
+            self.label_hora_fecha = Label(self.frame, text='Hora y Fecha de Cierre')
+            self.label_hora_fecha.grid(column=2, row=2, columnspan=2, sticky='e')
+            self.entry_hora_cierre = Entry(self.frame, textvariable=hora_cierre_mod_ticket, width=0, state='readonly')
+            self.entry_hora_cierre.grid(column=4, row=2, padx=(24,8), ipady=3, sticky='ew')
+            self.entry_fecha_cierre = Entry(self.frame, textvariable=fecha_cierre_mod_ticket, width=0, state='readonly')
+            self.entry_fecha_cierre.grid(column=5, row=2, padx=(24,8), ipady=3, sticky='ew')
+
+        self.combobox_estado = Combobox(self.frame, textvariable=estado_mod_ticket, values=lista_estados, state='readonly')
+        self.combobox_estado.grid(column=0, row=2, columnspan=2, padx=(24,8), ipady=3, sticky='ew')
 
         self.lista_label = [
-            Label(self.frame, text='Usuario *'),
+            Label(self.frame, text='Usuario  '),
             Label(self.frame, text='Área *')
         ]
         self.lista_entry = [
-            Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario)
+            Entry(self.frame, textvariable=usuario_mod_ticket, state='readonly'),
+            Combobox(self.frame, textvariable=area_mod_ticket, values=lista_areas, state='readonly')
         ]
         self.lista_label_2 = [
             Label(self.frame, text='Tipo Problema *'),
             Label(self.frame, text='Código Hardware  ')
         ]
         self.lista_entry_2 = [
-            Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario)
+            Combobox(self.frame, textvariable=tipo_problema_mod_ticket, values=lista_tipos_problema, state='readonly'),
+            Entry(self.frame, textvariable=codigo_hardware_mod_ticket)
         ]
         self.lista_label_3 = [
             Label(self.frame, text='Prioridad *'),
             Label(self.frame, text='Técnico  ')
         ]
         self.lista_entry_3 = [
-            Entry(self.frame, textvariable=nombre_mod_usuario),
-            Entry(self.frame, textvariable=apellido_mod_usuario)
+            Combobox(self.frame, textvariable=prioridad_mod_ticket, values=lista_prioridades, state='readonly'),
+            Combobox(self.frame, textvariable=tecnico_mod_ticket, values=lista_tecnicos, state='readonly')
         ]
-        self.button_aceptar = Button(
-            self.frame, text='aceptar', command=modificar_ticket, cursor='hand2')
 
-        posicionar_formulario(self.lista_label, self.lista_entry, row=2)
-        posicionar_formulario(self.lista_label_2, self.lista_entry_2, column=2, row=2)
-        posicionar_formulario(self.lista_label_3, self.lista_entry_3, column=4, row=2)
+        self.frame_text = Frame(self.frame)
+        self.frame_text.columnconfigure(0, weight=1)
+
+        self.text = Text(self.frame_text, height=12, width=0, font=fuente_label)
+        self.text.insert('1.0', descripcion_mod_ticket.get())
+        self.text.config(state='disabled')
+        self.scrollbar = Scrollbar(self.frame_text, command=self.text.yview)
+        self.text.config(yscrollcommand=self.scrollbar.set)
+        self.text.grid(column=0, row=0, sticky='nsew')
+        self.scrollbar.grid(row=0, column=1, sticky='ns')
+
+        self.frame_text.grid(column=0, row=5, columnspan=4, padx=24, ipady=3, sticky='ew')
+
+        self.button_aceptar = Button(self.frame, text='Aceptar', command=modificar_ticket, cursor='hand2')
+
+        posicionar_formulario(self.lista_label, self.lista_entry, row=3)
+        posicionar_formulario(self.lista_label_2, self.lista_entry_2, column=2, row=3)
+        posicionar_formulario(self.lista_label_3, self.lista_entry_3, column=4, row=3)
+
+        self.button_modificar = Button(self.frame, text='Modificar', command=modificar_ticket, cursor='hand2')
+        self.button_modificar.grid(column=4, row=6, columnspan=2, padx=24, pady=(12, 8), ipadx=16, ipady=6, sticky='e')
 
 
 class WidgetsCrearPedido():
@@ -1198,5 +1277,3 @@ widgets_usuarios = WidgetsUsuarios()
 widgets_tipos_problema = WidgetsTiposProblema()
 
 ventana.mainloop()
-
-#agregar formulario tipo problema
