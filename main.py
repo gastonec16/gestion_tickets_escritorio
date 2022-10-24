@@ -77,7 +77,10 @@ def registrar_usuario():
     if validar_obligatorios((nombre, apellido, legajo, email, nombre_usuarioo, contraseña)):
         usuario.insertar(nombre, apellido, legajo, email, nombre_usuarioo, contraseña)
         vaciar_entry(widgets_registrarse.lista_entry)
-        widgets_usuarios.actualizar_treeview()
+        print(type(widgets_iniciar_sesion.lista_entry[1]))
+        print(widgets_iniciar_sesion.lista_entry[1])
+        widgets_iniciar_sesion.lista_entry[1].delete(0, 'end')
+        widgets_iniciar_sesion.lista_entry[1].insert(0, nombre_usuarioo)
 
 
 def modificar_usuario():
@@ -98,7 +101,7 @@ def modificar_usuario():
             id_tipo_usuario = tipo_usuario.obtener_id(tipo_mod_usuario.get())
             usuario.modificar(id_usuario, id_tipo_usuario, nombre, apellido, email, legajo, activo)
             vaciar_entry(widgets_registrarse.lista_entry)
-            actualizar_treeview(usuario, widgets_usuarios.treeview)
+            widgets_usuarios.actualizar_treeview()
             ventana_emergente.top.destroy()
 
 #====================================================================================================================
@@ -299,10 +302,30 @@ def iniciar_sesion():
         mb.showerror('ERROR', 'El nombre de usuario no existe')
         return
     
+    global widgets_areas
+    global widgets_crear_ticket
+    global widgets_mostrar_tickets
+    global widgets_crear_pedido
+    global widgets_usuarios
+    global widgets_tipos_problema
+
     datos = usuario.mostrar_datos(nombre_usuarioo)
     
     usuario_actual = UsuarioActual(datos[0], datos[1], datos[2], datos[3], datos[4],
                                    datos[5], datos[6], datos[7], datos[8])
+
+    notebook_contenido.forget(widgets_iniciar_sesion.frame)
+    notebook_contenido.forget(widgets_registrarse.frame)
+
+    widgets_crear_ticket = WidgetsCrearTicket()
+
+    if usuario_actual.id_tipo_usuario == 1 or usuario_actual.id_tipo_usuario == 2:
+        widgets_mostrar_tickets = WidgetsMostrarTickets()
+        widgets_areas = WidgetsAreas()
+        widgets_crear_pedido = WidgetsCrearPedido()
+        widgets_tipos_problema = WidgetsTiposProblema()
+        if usuario_actual.id_tipo_usuario == 1:
+            widgets_usuarios = WidgetsUsuarios()
 
 def crear_pedido():
     print('crear pedido')
@@ -1259,21 +1282,23 @@ class UsuarioActual:
         self.nombre_usuario = nombre_usuario
         self.contraseña = contraseña
 
-
-
-
-
 # endregion
 
 actualizar_listas()
 ventana_emergente = None
 widgets_iniciar_sesion = WidgetsIniciarSesion()
 widgets_registrarse = WidgetsRegistrarse()
-widgets_areas = WidgetsAreas()
-widgets_crear_ticket = WidgetsCrearTicket()
-widgets_mostrar_tickets = WidgetsMostrarTickets()
-widgets_crear_pedido = WidgetsCrearPedido()
-widgets_usuarios = WidgetsUsuarios()
-widgets_tipos_problema = WidgetsTiposProblema()
+widgets_areas = None
+widgets_mostrar_tickets = None
+widgets_crear_pedido = None
+widgets_usuarios = None
+widgets_tipos_problema = None
+
+# widgets_areas = WidgetsAreas()
+# widgets_crear_ticket = WidgetsCrearTicket()
+# widgets_mostrar_tickets = WidgetsMostrarTickets()
+# widgets_crear_pedido = WidgetsCrearPedido()
+# widgets_usuarios = WidgetsUsuarios()
+# widgets_tipos_problema = WidgetsTiposProblema()
 
 ventana.mainloop()
