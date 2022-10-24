@@ -166,7 +166,7 @@ class Ticket:
         self.conexion.commit()
         con.close()
         mb.showinfo(title='Ticket Archivado',
-                    message=f'Se ha archivado el ticket {id_ticket}')
+                    message=f'Se ha archivado el ticket Nº {id_ticket}')
 
     def obtener_datos(self, id_ticket):
         con = self.conexion.cursor()

@@ -77,8 +77,6 @@ def registrar_usuario():
     if validar_obligatorios((nombre, apellido, legajo, email, nombre_usuarioo, contraseña)):
         usuario.insertar(nombre, apellido, legajo, email, nombre_usuarioo, contraseña)
         vaciar_entry(widgets_registrarse.lista_entry)
-        print(type(widgets_iniciar_sesion.lista_entry[1]))
-        print(widgets_iniciar_sesion.lista_entry[1])
         widgets_iniciar_sesion.lista_entry[1].delete(0, 'end')
         widgets_iniciar_sesion.lista_entry[1].insert(0, nombre_usuarioo)
 
@@ -322,7 +320,7 @@ def iniciar_sesion():
     if usuario_actual.id_tipo_usuario == 1 or usuario_actual.id_tipo_usuario == 2:
         widgets_mostrar_tickets = WidgetsMostrarTickets()
         widgets_areas = WidgetsAreas()
-        widgets_crear_pedido = WidgetsCrearPedido()
+        # widgets_crear_pedido = WidgetsCrearPedido()
         widgets_tipos_problema = WidgetsTiposProblema()
         if usuario_actual.id_tipo_usuario == 1:
             widgets_usuarios = WidgetsUsuarios()
