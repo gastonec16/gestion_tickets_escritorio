@@ -107,11 +107,11 @@ def crear_ticket():
     area = Area()
     tipo_problema = TipoProblema()
     id_usuario = usuario_actual.id_usuario                                 #ticket
-    asunto = asunto_ticket.get()
-    id_area = area_ticket.get()
-    id_tipo_problema = tipo_problema_ticket.get()
-    codigo_hardware = codigo_hardware_ticket.get()
-    descripcion = widgets_crear_ticket.text.get('1.0', 'end')
+    asunto = asunto_ticket.get().strip()
+    id_area = area_ticket.get().strip()
+    id_tipo_problema = tipo_problema_ticket.get().strip()
+    codigo_hardware = codigo_hardware_ticket.get().strip()
+    descripcion = widgets_crear_ticket.text.get('1.0', 'end').strip()
     if validar_obligatorios((asunto, id_area, id_tipo_problema, descripcion)):
         id_area = area.obtener_id(area_ticket.get())
         id_tipo_problema = tipo_problema.obtener_id(tipo_problema_ticket.get())
@@ -170,18 +170,21 @@ def modificar_ticket():
         id_estado = estado_mod_ticket.get()
         codigo_hardware = codigo_hardware_mod_ticket.get()
         id_tecnico = tecnico_mod_ticket.get()
-        if validar_obligatorios((id_area, id_prioridad, id_estado, codigo_hardware)):
+        id_tipo_problema = id_mod_tipo_problema.get()
+        if validar_obligatorios((id_area, id_prioridad, id_estado, id_tipo_problema, codigo_hardware)):
             ticket = Ticket()
             area = Area()
             prioridad = Prioridad()
             estado = Estado()
             usuario = Usuario()
+            tipo_problema = TipoProblema()
             id_area = area.obtener_id(area_mod_ticket.get())
             id_prioridad = prioridad.obtener_id(prioridad_mod_ticket.get())
             id_estado = estado.obtener_id(estado_mod_ticket.get())
+            id_tipo_problema = tipo_problema.obtener_id(tipo_problema_mod_ticket.get())
             if id_tecnico != '':
                 id_tecnico = usuario.obtener_id(tecnico_mod_ticket.get())
-            ticket.modificar(id_ticket, id_area, id_prioridad, id_estado, id_tecnico, codigo_hardware)
+            ticket.modificar(id_ticket, id_area, id_prioridad, id_estado, id_tipo_problema, id_tecnico, codigo_hardware)
             if id_estado == 5:
                 fecha_cierre = strftime('%Y/%m/%d')
                 hora_cierre = strftime('%H:%M:%S')
@@ -294,36 +297,41 @@ def iniciar_sesion():
     usuario = Usuario()
     for i in usuario.lista_usuarios():
         if i[0] == nombre_usuarioo:
-            usuario.validar_contraseña(nombre_usuarioo, contraseña)
+            # usuario.validar_contraseña(nombre_usuarioo, contraseña)
             break
     else:
         mb.showerror('ERROR', 'El nombre de usuario no existe')
         return
     
-    global widgets_areas
-    global widgets_crear_ticket
-    global widgets_mostrar_tickets
-    global widgets_crear_pedido
-    global widgets_usuarios
-    global widgets_tipos_problema
+    if usuario.validar_contraseña(nombre_usuarioo, contraseña) != False:
 
-    datos = usuario.mostrar_datos(nombre_usuarioo)
-    
-    usuario_actual = UsuarioActual(datos[0], datos[1], datos[2], datos[3], datos[4],
-                                   datos[5], datos[6], datos[7], datos[8])
+        global widgets_areas
+        global widgets_crear_ticket
+        global widgets_mostrar_tickets
+        global widgets_crear_pedido
+        global widgets_usuarios
+        global widgets_tipos_problema
 
-    notebook_contenido.forget(widgets_iniciar_sesion.frame)
-    notebook_contenido.forget(widgets_registrarse.frame)
+        datos = usuario.mostrar_datos(nombre_usuarioo)
+        
+        usuario_actual = UsuarioActual(datos[0], datos[1], datos[2], datos[3], datos[4],
+                                    datos[5], datos[6], datos[7], datos[8])
 
-    widgets_crear_ticket = WidgetsCrearTicket()
+        notebook_contenido.forget(widgets_iniciar_sesion.frame)
+        notebook_contenido.forget(widgets_registrarse.frame)
 
-    if usuario_actual.id_tipo_usuario == 1 or usuario_actual.id_tipo_usuario == 2:
-        widgets_mostrar_tickets = WidgetsMostrarTickets()
-        widgets_areas = WidgetsAreas()
-        # widgets_crear_pedido = WidgetsCrearPedido()
-        widgets_tipos_problema = WidgetsTiposProblema()
-        if usuario_actual.id_tipo_usuario == 1:
-            widgets_usuarios = WidgetsUsuarios()
+        widgets_crear_ticket = WidgetsCrearTicket()
+
+        if usuario_actual.id_tipo_usuario == 1 or usuario_actual.id_tipo_usuario == 2:
+            widgets_mostrar_tickets = WidgetsMostrarTickets()
+            widgets_areas = WidgetsAreas()
+            # widgets_crear_pedido = WidgetsCrearPedido()
+            widgets_tipos_problema = WidgetsTiposProblema()
+            if usuario_actual.id_tipo_usuario == 1:
+                widgets_usuarios = WidgetsUsuarios()
+
+    else:
+        mb.showerror('ERROR', 'Contraseña incorrecta')
 
 def crear_pedido():
     print('crear pedido')

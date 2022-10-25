@@ -78,7 +78,7 @@ class Usuario:
             registro = con.fetchall()
             return registro
         else:
-            mb.showerror('ERROR', 'Contraseña incorrecta')
+            return False
 
     def obtener_campo(self, campo, id):
         con = self.conexion.cursor()
@@ -143,14 +143,14 @@ class Ticket:
         registro = con.fetchall()
         return reversed(registro)
 
-    def modificar(self, id_ticket, id_area, id_prioridad, id_estado, id_tecnico, codigo_hardware):
+    def modificar(self, id_ticket, id_area, id_prioridad, id_estado, id_tipo_problema, id_tecnico, codigo_hardware):
         con = self.conexion.cursor()
         sql = ''
         if id_tecnico != '':
-            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado},
+            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado}, id_tipo_problema={id_tipo_problema},
                     id_tecnico={id_tecnico}, codigo_hardware='{codigo_hardware}' WHERE id_ticket={id_ticket}'''
         else:
-            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado},
+            sql = f'''UPDATE ticket SET id_area={id_area}, id_prioridad={id_prioridad}, id_estado={id_estado}, id_tipo_problema={id_tipo_problema},
                     codigo_hardware='{codigo_hardware}' WHERE id_ticket={id_ticket}'''
         con.execute(sql)
         self.conexion.commit()
